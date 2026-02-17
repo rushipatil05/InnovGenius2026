@@ -109,22 +109,20 @@ export default function OfficerDashboard() {
           <nav className="p-4 space-y-2">
             <button
               onClick={() => setActiveTab('applications')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                activeTab === 'applications'
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${activeTab === 'applications'
                   ? 'bg-blue-50 text-blue-700 font-semibold'
                   : 'text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <FileText className="w-5 h-5" />
               <span>Applications</span>
             </button>
             <button
               onClick={() => setActiveTab('logs')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                activeTab === 'logs'
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${activeTab === 'logs'
                   ? 'bg-blue-50 text-blue-700 font-semibold'
                   : 'text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <ClipboardList className="w-5 h-5" />
               <span>Audit Logs</span>
@@ -244,60 +242,76 @@ export default function OfficerDashboard() {
 
             <div className="p-6 space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3">Applicant Information</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Name</p>
-                    <p className="font-medium">{selectedApp.userName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{selectedApp.userEmail}</p>
-                  </div>
+                <h4 className="font-semibold text-gray-900 mb-3">1. Personal Details</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><p className="text-gray-500">Full Name</p><p className="font-medium">{selectedApp.userName}</p></div>
+                  <div><p className="text-gray-500">Date of Birth</p><p className="font-medium">{selectedApp.dob || '-'}</p></div>
+                  <div><p className="text-gray-500">Gender</p><p className="font-medium capitalize">{selectedApp.gender || '-'}</p></div>
+                  <div><p className="text-gray-500">Marital Status</p><p className="font-medium capitalize">{selectedApp.maritalStatus || '-'}</p></div>
+                  <div><p className="text-gray-500">Nationality</p><p className="font-medium">{selectedApp.nationality || '-'}</p></div>
+                  <div><p className="text-gray-500">Parent's Name</p><p className="font-medium">{selectedApp.parentsName || '-'}</p></div>
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3">Financial Details</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Monthly Transactions</p>
-                    <p className="font-medium">₹{selectedApp.monthlyTxn.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Employment Type</p>
-                    <p className="font-medium">{selectedApp.employment}</p>
-                  </div>
+                <h4 className="font-semibold text-gray-900 mb-3">2. Contact Information</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><p className="text-gray-500">Mobile Number</p><p className="font-medium">{selectedApp.mobileNumber || '-'}</p></div>
+                  <div><p className="text-gray-500">Email ID</p><p className="font-medium">{selectedApp.userEmail}</p></div>
+                  <div className="col-span-2"><p className="text-gray-500">Current Address</p><p className="font-medium">{selectedApp.currentAddress || '-'}</p></div>
+                  <div className="col-span-2"><p className="text-gray-500">Permanent Address</p><p className="font-medium">{selectedApp.permanentAddress || '-'}</p></div>
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-3">KYC Details</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <h4 className="font-semibold text-gray-900 mb-3">3. Account Details</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><p className="text-gray-500">Account Type</p><p className="font-medium capitalize">{selectedApp.accountType || 'Savings'}</p></div>
+                  <div><p className="text-gray-500">Branch Preference</p><p className="font-medium">{selectedApp.branchPreference || '-'}</p></div>
+                  <div><p className="text-gray-500">Mode of Operation</p><p className="font-medium capitalize">{selectedApp.modeOfOperation || 'Self'}</p></div>
+                  <div><p className="text-gray-500">Initial Deposit</p><p className="font-medium">₹{(selectedApp.initialDeposit || 0).toLocaleString()}</p></div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-3">4. Employment & Financial</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><p className="text-gray-500">Occupation</p><p className="font-medium">{selectedApp.employment}</p></div>
+                  <div><p className="text-gray-500">Annual Income</p><p className="font-medium">{selectedApp.annualIncome || '-'}</p></div>
+                  <div><p className="text-gray-500">Source of Funds</p><p className="font-medium">{selectedApp.sourceOfFunds || '-'}</p></div>
+                  <div><p className="text-gray-500">Monthly Txn (Approx)</p><p className="font-medium">₹{selectedApp.monthlyTxn.toLocaleString()}</p></div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-3">5. KYC Details</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-sm text-gray-500">PAN Number</p>
+                    <p className="text-gray-500">PAN Number</p>
                     <div className="flex items-center space-x-2">
                       <p className="font-medium">{selectedApp.panNumber}</p>
-                      {selectedApp.isPanValid ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-600" />
-                      )}
+                      {selectedApp.isPanValid ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Aadhaar Number</p>
+                    <p className="text-gray-500">Aadhaar Number</p>
                     <div className="flex items-center space-x-2">
                       <p className="font-medium">{selectedApp.aadhaarNumber}</p>
-                      {selectedApp.isAadhaarValid ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-600" />
-                      )}
+                      {selectedApp.isAadhaarValid ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
                     </div>
                   </div>
                 </div>
               </div>
+
+              {selectedApp.nomineeName && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">6. Nominee Details</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><p className="text-gray-500">Nominee Name</p><p className="font-medium">{selectedApp.nomineeName}</p></div>
+                    <div><p className="text-gray-500">Relationship</p><p className="font-medium">{selectedApp.nomineeRelation}</p></div>
+                  </div>
+                </div>
+              )}
 
               <div className={`rounded-lg p-4 border-2 ${getRiskColor(selectedApp.riskCategory)}`}>
                 <h4 className="font-semibold mb-3">Risk Assessment</h4>
