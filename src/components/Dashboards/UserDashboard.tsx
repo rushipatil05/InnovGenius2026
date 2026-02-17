@@ -1,22 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
-import { calculateRisk } from '../../utils/riskEngine';
 import { Application } from '../../types';
-import { LogOut, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { LogOut, FileText, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
+import AccountOpeningForm from './AccountOpeningForm';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    monthlyTxn: '',
-    employment: 'Salaried',
-    panNumber: '',
-    aadhaarNumber: '',
-  });
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [showNewApplicationForm, setShowNewApplicationForm] = useState(false);
 
   useEffect(() => {
     loadApplications();
@@ -26,76 +18,12 @@ export default function UserDashboard() {
     const allApplications = storage.getApplications();
     const userApplications = allApplications.filter(app => app.userId === user?.id);
     setApplications(userApplications);
-  };
-
-  const validatePAN = (pan: string): boolean => {
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    return panRegex.test(pan);
-  };
-
-  const validateAadhaar = (aadhaar: string): boolean => {
-    const aadhaarRegex = /^[0-9]{12}$/;
-    return aadhaarRegex.test(aadhaar);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!formData.monthlyTxn || !formData.panNumber || !formData.aadhaarNumber) {
-      setError('Please fill in all fields');
-      return;
+    // If no applications, show form by default
+    if (userApplications.length === 0) {
+      setShowNewApplicationForm(true);
+    } else {
+      setShowNewApplicationForm(false);
     }
-
-    const isPanValid = validatePAN(formData.panNumber);
-    const isAadhaarValid = validateAadhaar(formData.aadhaarNumber);
-
-    const riskResult = calculateRisk({
-      monthlyTxn: parseFloat(formData.monthlyTxn),
-      employment: formData.employment,
-      isPanValid,
-      isAadhaarValid,
-    });
-
-    const application: Application = {
-      id: Date.now().toString(),
-      userId: user!.id,
-      userName: user!.name,
-      userEmail: user!.email,
-      monthlyTxn: parseFloat(formData.monthlyTxn),
-      employment: formData.employment,
-      panNumber: formData.panNumber,
-      isPanValid,
-      aadhaarNumber: formData.aadhaarNumber,
-      isAadhaarValid,
-      status: 'pending',
-      riskScore: riskResult.score,
-      riskCategory: riskResult.category,
-      riskReasons: riskResult.reasons,
-      submittedAt: new Date().toISOString(),
-    };
-
-    storage.addApplication(application);
-    storage.addAuditLog({
-      id: Date.now().toString(),
-      action: 'APPLICATION_SUBMITTED',
-      userId: user!.id,
-      userName: user!.name,
-      details: `Application submitted with risk level: ${riskResult.category}`,
-      timestamp: new Date().toISOString(),
-      applicationId: application.id,
-    });
-
-    setSuccess('Application submitted successfully!');
-    setFormData({
-      monthlyTxn: '',
-      employment: 'Salaried',
-      panNumber: '',
-      aadhaarNumber: '',
-    });
-    setShowForm(false);
-    loadApplications();
   };
 
   const getRiskColor = (category: string) => {
@@ -117,7 +45,7 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -139,150 +67,90 @@ export default function UserDashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
-          >
-            {showForm ? 'Hide Form' : 'New Application'}
-          </button>
-        </div>
-
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
-            {success}
+        {showNewApplicationForm ? (
+          <div className="animate-fade-in-up">
+            <div className="mb-6 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-700">New Account Application</h2>
+              {applications.length > 0 && (
+                <button
+                  onClick={() => setShowNewApplicationForm(false)}
+                  className="text-gray-500 hover:text-gray-700 underline"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+            <AccountOpeningForm onSuccess={loadApplications} />
           </div>
-        )}
-
-        {showForm && (
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Submit New Application</h2>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Monthly Transaction Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.monthlyTxn}
-                    onChange={(e) => setFormData({ ...formData, monthlyTxn: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    placeholder="150000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Employment Type
-                  </label>
-                  <select
-                    value={formData.employment}
-                    onChange={(e) => setFormData({ ...formData, employment: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
-                  >
-                    <option value="Salaried">Salaried</option>
-                    <option value="Self-Employed">Self-Employed</option>
-                    <option value="Business">Business</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PAN Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.panNumber}
-                    onChange={(e) => setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    placeholder="ABCDE1234F"
-                    maxLength={10}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Format: 5 letters, 4 digits, 1 letter</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Aadhaar Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.aadhaarNumber}
-                    onChange={(e) => setFormData({ ...formData, aadhaarNumber: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    placeholder="123456789012"
-                    maxLength={12}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">12 digit Aadhaar number</p>
-                </div>
-              </div>
-
+        ) : (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">My Applications</h2>
               <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
+                onClick={() => setShowNewApplicationForm(true)}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm"
               >
-                Submit Application
+                <Plus className="w-4 h-4" />
+                <span>New Application</span>
               </button>
-            </form>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              {applications.length === 0 ? (
+                <div className="p-12 text-center">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No applications yet</p>
+                  <button
+                    onClick={() => setShowNewApplicationForm(true)}
+                    className="mt-4 text-blue-600 font-semibold hover:underline"
+                  >
+                    Start an Application
+                  </button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Risk Level</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {applications.map((app) => (
+                        <tr key={app.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {new Date(app.submittedAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                            {app.accountType || 'Savings'} <span className="text-gray-400 text-xs">({app.branchPreference})</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getRiskColor(app.riskCategory)}`}>
+                              {app.riskCategory}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              {getStatusIcon(app.status)}
+                              <span className="text-sm capitalize">{app.status}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            Score: {app.riskScore}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b bg-gray-50">
-            <h2 className="text-xl font-bold text-gray-900">My Applications</h2>
-          </div>
-
-          {applications.length === 0 ? (
-            <div className="p-12 text-center">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No applications yet</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Risk Level</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {new Date(app.submittedAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getRiskColor(app.riskCategory)}`}>
-                          {app.riskCategory}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(app.status)}
-                          <span className="text-sm capitalize">{app.status}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        Score: {app.riskScore}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
