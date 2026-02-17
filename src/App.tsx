@@ -1,16 +1,27 @@
-import { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Login from './components/Auth/Login';
-import Signup from './components/Auth/Signup';
-import UserDashboard from './components/Dashboards/UserDashboard';
-import OfficerDashboard from './components/Dashboards/OfficerDashboard';
-import AuditorDashboard from './components/Dashboards/AuditorDashboard';
+import { useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
+import LandingPage from "./components/Landing/LandingPage";
+import Login from "./components/Auth/Login";
+import Signup from "./components/Auth/Signup";
+
+import UserDashboard from "./components/Dashboards/UserDashboard";
+import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
+import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
 
 function AppContent() {
   const { user } = useAuth();
+
+  const [showAuth, setShowAuth] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
 
   if (!user) {
+    // Show Landing Page first
+    if (!showAuth) {
+      return <LandingPage onGetStarted={() => setShowAuth(true)} />;
+    }
+
+    // Then show login/signup
     return showLogin ? (
       <Login onSwitchToSignup={() => setShowLogin(false)} />
     ) : (
@@ -19,11 +30,11 @@ function AppContent() {
   }
 
   switch (user.role) {
-    case 'user':
+    case "user":
       return <UserDashboard />;
-    case 'officer':
+    case "officer":
       return <OfficerDashboard />;
-    case 'auditor':
+    case "auditor":
       return <AuditorDashboard />;
     default:
       return <UserDashboard />;
