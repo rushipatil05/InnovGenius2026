@@ -8,7 +8,7 @@ import Signup from "./components/Auth/Signup";
 import UserDashboard from "./components/Dashboards/UserDashboard";
 import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
 import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
-import { LanguageProvider } from "./contexts/Languagecontext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 function DashboardRouter() {
   const { user } = useAuth();
