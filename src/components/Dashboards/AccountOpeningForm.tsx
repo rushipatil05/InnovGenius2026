@@ -246,7 +246,7 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
 
     // ── Tambo integration: register fill callback via global bridge ─────────
     useEffect(() => {
-        // Register with global bridge (used by PersonalDetailsFormFiller / ContactDetailsFormFiller)
+        // Register with global bridge (used by ALL Form Fillers)
         formFillBridge.register((data) => {
             // Personal Details (Step 1)
             if (data.fullName) handleChange('fullName', data.fullName);
@@ -264,36 +264,83 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
             if (data.city) handleChange('city', data.city);
             if (data.state) handleChange('state', data.state);
             if (data.pincode) handleChange('pincode', data.pincode);
-            if (data.permanentAddressSame) {
-                // If user says "same as current", we can auto-fill permanent address if current is set
-                // But the form handles this via checkbox logic usually. 
-                // We'll just trust the AI provides explicit permanentAddress if needed, or we rely on user action.
-                // Or better: trigger the checkbox logic if possible? No, uncontrolled component.
-                // We'll just set permanentAddress to currentAddress if available in data or state
-                if (data.currentAddress || formData.currentAddress) {
-                    handleChange('permanentAddress', data.currentAddress || formData.currentAddress);
-                }
+            if (data.permanentAddressSame && (data.currentAddress || formData.currentAddress)) {
+                handleChange('permanentAddress', data.currentAddress || formData.currentAddress);
             }
+
+            // KYC Details (Step 3)
+            if (data.panNumber) handleChange('panNumber', data.panNumber);
+            if (data.aadhaarNumber) handleChange('aadhaarNumber', data.aadhaarNumber);
+            if (data.passportNumber) handleChange('passportNumber', data.passportNumber);
+
+            // Account Details (Step 4)
+            if (data.accountType) handleChange('accountType', data.accountType);
+            if (data.branchPreference) handleChange('branchPreference', data.branchPreference);
+            if (data.modeOfOperation) handleChange('modeOfOperation', data.modeOfOperation);
+            if (data.initialDeposit) handleChange('initialDeposit', Number(data.initialDeposit));
+
+            // Financial Details (Step 5)
+            if (data.employment) {
+                const v = data.employment.toLowerCase();
+                let val = 'Salaried'; // default
+                if (v.includes('student')) val = 'Student';
+                else if (v.includes('self')) val = 'Self-Employed';
+                else if (v.includes('business')) val = 'Business';
+                else if (v.includes('salary') || v.includes('salaried')) val = 'Salaried';
+                handleChange('employment', val);
+            }
+            if (data.employerName) handleChange('employerName', data.employerName);
+            if (data.annualIncome) {
+                const v = data.annualIncome.toLowerCase().replace(/\s/g, '');
+                let val = '';
+                // Order matters! Check specific/larger sets first to avoid partial matches (e.g. '10' contains '1')
+                if (v.includes('>10') || v.includes('more') || v.includes('above')) val = '>10L';
+                else if (v.includes('5-10') || (v.includes('5') && v.includes('10'))) val = '5L-10L';
+                else if (v.includes('1-5') || (v.includes('1') && v.includes('5'))) val = '1L-5L';
+                else if (v.includes('<1') || v.includes('less') || v.includes('below')) val = '<1L';
+
+                if (val) handleChange('annualIncome', val);
+            }
+            if (data.sourceOfFunds) handleChange('sourceOfFunds', data.sourceOfFunds);
+            if (data.monthlyTxn) {
+                const num = parseFloat(String(data.monthlyTxn).replace(/[^0-9.]/g, ''));
+                if (!isNaN(num)) handleChange('monthlyTxn', num);
+            }
+
+            // Nominee Details (Step 6)
+            if (data.nomineeName) handleChange('nomineeName', data.nomineeName);
+            if (data.nomineeRelation) handleChange('nomineeRelation', data.nomineeRelation);
+            if (data.nomineeDob) handleChange('nomineeDob', data.nomineeDob);
+            if (data.nomineeAddress) handleChange('nomineeAddress', data.nomineeAddress);
+
+            // Services (Step 7)
+            if (data.debitCard !== undefined) handleChange('services.debitCard', data.debitCard);
+            if (data.netBanking !== undefined) handleChange('services.netBanking', data.netBanking);
+            if (data.mobileBanking !== undefined) handleChange('services.mobileBanking', data.mobileBanking);
+            if (data.chequeBook !== undefined) handleChange('services.chequeBook', data.chequeBook);
+            if (data.smsAlerts !== undefined) handleChange('services.smsAlerts', data.smsAlerts);
         });
 
         // Update App Context for auto-context awareness
-        const stepInfo = {
-            1: { name: 'Personal Details', req: ['dob', 'parentsName'], opt: ['fullName', 'gender'] },
-            2: { name: 'Contact Information', req: ['mobileNumber', 'currentAddress', 'city', 'state', 'pincode'], opt: ['email'] },
-            3: { name: 'KYC Documents', req: ['panNumber', 'aadhaarNumber'], opt: [] },
-            4: { name: 'Account Details', req: ['branchPreference', 'initialDeposit'], opt: [] },
-            5: { name: 'Financial Details', req: ['employment', 'annualIncome'], opt: [] },
-            6: { name: 'Nominee Details', req: [], opt: ['nomineeName'] },
-            7: { name: 'Services', req: [], opt: ['debitCard'] },
-        }[step] || { name: 'Unknown', req: [], opt: [] };
+        const stepContexts: Record<number, { name: string; required: string[]; optional: string[]; notes?: string }> = {
+            1: { name: 'Personal Details', required: ['dob', 'parentsName'], optional: ['fullName', 'gender', 'maritalStatus', 'nationality'], notes: 'Full Name is editable. DOB must be 18+.' },
+            2: { name: 'Contact Information', required: ['mobileNumber', 'currentAddress', 'city', 'state', 'pincode'], optional: ['email', 'permanentAddress'], notes: 'Mobile number 10 digits.' },
+            3: { name: 'KYC Documents', required: ['panNumber', 'aadhaarNumber'], optional: ['passportNumber'], notes: 'PAN format: 5 letters, 4 digits, 1 letter. Aadhaar: 12 digits.' },
+            4: { name: 'Account Details', required: ['branchPreference', 'initialDeposit'], optional: ['accountType', 'modeOfOperation'], notes: 'Min deposit 500.' },
+            5: { name: 'Financial Details', required: ['employment', 'annualIncome'], optional: ['employerName', 'sourceOfFunds'], notes: 'Occupation: Student, Salaried, Self-Employed, Business. Income: 1L-5L, 5L-10L, >10L, <1L.' },
+            6: { name: 'Nominee Details', required: [], optional: ['nomineeName', 'nomineeRelation', 'nomineeDob', 'nomineeAddress'], notes: 'Nominee is completely optional.' },
+            7: { name: 'Services', required: [], optional: ['debitCard', 'netBanking', 'mobileBanking', 'chequeBook', 'smsAlerts'], notes: 'Select desired services.' },
+        };
+
+        const ctx = stepContexts[step] || { name: 'Unknown', required: [], optional: [] };
 
         appContextBridge.update({
             currentStep: step,
-            stepName: stepInfo.name,
-            requiredFields: stepInfo.req,
-            optionalFields: stepInfo.opt,
+            stepName: ctx.name,
+            requiredFields: ctx.required,
+            optionalFields: ctx.optional,
             view: 'account-opening',
-            notes: step === 2 ? 'Address proof not needed yet.' : ''
+            notes: ctx.notes
         });
 
         return () => formFillBridge.unregister();

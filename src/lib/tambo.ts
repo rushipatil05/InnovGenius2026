@@ -2,6 +2,11 @@ import { z } from 'zod';
 import PersonalDetailsFormFiller from '../components/Dashboards/PersonalDetailsFormFiller';
 import NavigateToService from '../components/Dashboards/NavigateToService';
 import ContactDetailsFormFiller from '../components/Dashboards/ContactDetailsFormFiller';
+import KYCFormFiller from '../components/Dashboards/KYCFormFiller';
+import AccountDetailsFormFiller from '../components/Dashboards/AccountDetailsFormFiller';
+import FinancialDetailsFormFiller from '../components/Dashboards/FinancialDetailsFormFiller';
+import NomineeDetailsFormFiller from '../components/Dashboards/NomineeDetailsFormFiller';
+import ServicesSelectionFormFiller from '../components/Dashboards/ServicesSelectionFormFiller';
 import { appContextBridge } from './appContextBridge';
 
 /**
@@ -13,26 +18,17 @@ export const tamboComponents = [
         name: 'NavigateToService',
         description:
             'Use this when the user wants to navigate to a specific banking service or feature. ' +
-            'For example: "I want to open an account", "open account", "start account opening", ' +
-            '"apply for a loan", "get a credit card". Renders a card and auto-navigates to the service. ' +
-            'Only "account" is currently available; all others are coming soon.',
+            'For example: "I want to open an account". Renders a card and auto-navigates.',
         component: NavigateToService,
         propsSchema: z.object({
-            service: z
-                .enum(['account', 'loans', 'cards', 'invest', 'insurance', 'tax'])
-                .describe(
-                    'The service to navigate to. Use "account" for account opening, "loans" for loans, etc.'
-                ),
-            title: z.string().optional().describe('Optional display title override'),
-            description: z.string().optional().describe('Optional description override'),
+            service: z.enum(['account', 'loans', 'cards', 'invest', 'insurance', 'tax']),
+            title: z.string().optional(),
+            description: z.string().optional(),
         }),
     },
     {
         name: 'PersonalDetailsFormFiller',
-        description:
-            'Renders a summary card and auto-fills Step 1 (Personal Details) of the account opening form. ' +
-            'Use this when the user provides personal info like DOB, gender, marital status, parent name. ' +
-            'Do NOT use if the user is providing contact info (mobile, email, address) - use ContactDetailsFormFiller instead.',
+        description: 'Auto-fills Step 1 (Personal Details). Use for DOB, gender, marital status, parents name.',
         component: PersonalDetailsFormFiller,
         propsSchema: z.object({
             fullName: z.string().optional(),
@@ -45,20 +41,72 @@ export const tamboComponents = [
     },
     {
         name: 'ContactDetailsFormFiller',
-        description:
-            'Renders a summary card and auto-fills Step 2 (Contact Information) of the account opening form. ' +
-            'Use this when the user provides contact info like mobile number, email, address, city, state, pin code. ' +
-            'Also use this if the user says their permanent address is the same as current address.',
+        description: 'Auto-fills Step 2 (Contact Information). Use for mobile, email, address, city, state, pincode.',
         component: ContactDetailsFormFiller,
         propsSchema: z.object({
-            mobileNumber: z.string().optional().describe("10-digit mobile number"),
-            email: z.string().optional().describe("Email address"),
-            currentAddress: z.string().optional().describe("Current residential address"),
-            permanentAddressSame: z.boolean().optional().describe("True if user says permanent address is same as current"),
-            permanentAddress: z.string().optional().describe("Permanent address. If same as current, leave empty and set permanentAddressSame=true."),
+            mobileNumber: z.string().optional(),
+            email: z.string().optional(),
+            currentAddress: z.string().optional(),
+            permanentAddressSame: z.boolean().optional(),
+            permanentAddress: z.string().optional(),
             city: z.string().optional(),
             state: z.string().optional(),
-            pincode: z.string().optional().describe("6-digit PIN code"),
+            pincode: z.string().optional(),
+        }),
+    },
+    {
+        name: 'KYCFormFiller',
+        description: 'Auto-fills Step 3 (KYC Details). Use for PAN, Aadhaar, Passport.',
+        component: KYCFormFiller,
+        propsSchema: z.object({
+            panNumber: z.string().optional(),
+            aadhaarNumber: z.string().optional(),
+            passportNumber: z.string().optional(),
+        }),
+    },
+    {
+        name: 'AccountDetailsFormFiller',
+        description: 'Auto-fills Step 4 (Account Details). Use for account type, branch, mode, deposit.',
+        component: AccountDetailsFormFiller,
+        propsSchema: z.object({
+            accountType: z.enum(['savings', 'current', 'salary']).optional(),
+            branchPreference: z.string().optional(),
+            modeOfOperation: z.enum(['self', 'joint']).optional(),
+            initialDeposit: z.string().optional(),
+        }),
+    },
+    {
+        name: 'FinancialDetailsFormFiller',
+        description: 'Auto-fills Step 5 (Financial Details). Use for employment, employer name, income, source of funds.',
+        component: FinancialDetailsFormFiller,
+        propsSchema: z.object({
+            employment: z.enum(['salaried', 'self-employed', 'student', 'retired', 'homemaker', 'unemployed']).optional(),
+            employerName: z.string().optional(),
+            annualIncome: z.string().optional().describe("Annual income range e.g. '< 1 Lakh', '1-5 Lakhs', etc."),
+            sourceOfFunds: z.string().optional(),
+        }),
+    },
+    {
+        name: 'NomineeDetailsFormFiller',
+        description: 'Auto-fills Step 6 (Nominee Details). Use for nominee name, relation, DOB, address.',
+        component: NomineeDetailsFormFiller,
+        propsSchema: z.object({
+            nomineeName: z.string().optional(),
+            nomineeRelation: z.string().optional(),
+            nomineeDob: z.string().optional(),
+            nomineeAddress: z.string().optional(),
+        }),
+    },
+    {
+        name: 'ServicesSelectionFormFiller',
+        description: 'Auto-fills Step 7 (Services). Use for debit card, net banking, mobile banking, cheque book, SMS alerts.',
+        component: ServicesSelectionFormFiller,
+        propsSchema: z.object({
+            debitCard: z.boolean().optional(),
+            netBanking: z.boolean().optional(),
+            mobileBanking: z.boolean().optional(),
+            chequeBook: z.boolean().optional(),
+            smsAlerts: z.boolean().optional(),
         }),
     },
 ];
@@ -93,7 +141,7 @@ export const tamboTools = [
     {
         name: 'get-form-context',
         description:
-            'Returns context about the ACTIVE form step. Call this to know which fields to ask for (Personal vs Contact vs KYC).',
+            'Returns context about the ACTIVE form step. Call this to know which fields to ask for.',
         tool: () => {
             const ctx = appContextBridge.get();
             return {

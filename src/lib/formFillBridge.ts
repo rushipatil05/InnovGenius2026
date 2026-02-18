@@ -21,6 +21,42 @@ type FillData = {
     state?: string;
     pincode?: string;
     permanentAddressSame?: boolean;
+
+    // KYC Details (Step 3)
+    panNumber?: string;
+    aadhaarNumber?: string;
+    passportNumber?: string;
+
+    // Account Details (Step 4)
+    accountType?: string;
+    branchPreference?: string;
+    modeOfOperation?: string; // 'self' | 'joint'
+    initialDeposit?: string; // string or number, bridge usually handles basic types but string is safe
+
+    // Joint Account Details
+    jointHolderName?: string;
+    jointHolderRelation?: string;
+    jointHolderDob?: string;
+    jointHolderMobile?: string;
+
+    // Financial Details (Step 5)
+    employment?: string;
+    employerName?: string;
+    annualIncome?: string;
+    sourceOfFunds?: string;
+
+    // Nominee Details (Step 6)
+    nomineeName?: string;
+    nomineeRelation?: string;
+    nomineeDob?: string;
+    nomineeAddress?: string;
+
+    // Services (Step 7)
+    debitCard?: boolean;
+    netBanking?: boolean;
+    mobileBanking?: boolean;
+    chequeBook?: boolean;
+    smsAlerts?: boolean;
 };
 
 type FillFn = (data: FillData) => void;
