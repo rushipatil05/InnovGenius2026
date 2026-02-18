@@ -41,7 +41,7 @@ export default function Login() {
         {/* Content */}
         <div className="relative z-10 w-full max-w-lg">
           <Link to="/" className="mb-8 block">
-            <img src={logo} alt="HooBank" className="w-[180px] h-[48px] object-contain" />
+            <img src={logo} alt="Aurora" className="w-[180px] h-[48px] object-contain" />
           </Link>
 
           <h1 className={`${styles.heading2} mb-6`}>

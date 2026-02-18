@@ -40,11 +40,17 @@ export interface Application {
   drivingLicense?: string;
   voterId?: string;
 
-  // 4. Account Details
   accountType: 'savings' | 'current' | 'salary';
   branchPreference: string;
   modeOfOperation: 'self' | 'joint';
   initialDeposit: number;
+  // Joint Account Holder (only when modeOfOperation === 'joint')
+  jointHolderName?: string;
+  jointHolderDob?: string;
+  jointHolderPan?: string;
+  jointHolderAadhaar?: string;
+  jointHolderRelation?: string;
+  jointHolderMobile?: string;
 
   // 5. Employment & Financial
   employment: string;

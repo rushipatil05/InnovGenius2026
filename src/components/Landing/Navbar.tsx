@@ -12,10 +12,10 @@ const Navbar: React.FC<NavbarProps> = ({ onSignupClick }) => {
 
   return (
     <nav className="w-full flex py-6 justify-between items-center navbar">
-      
+
       <img
         src={logo}
-        alt="HooBank Logo"
+        alt="Aurora Logo"
         className="w-[124px] h-[32px] object-contain"
       />
 
@@ -49,9 +49,8 @@ const Navbar: React.FC<NavbarProps> = ({ onSignupClick }) => {
         />
 
         <div
-          className={`${
-            toggle ? "flex" : "hidden"
-          } p-6 bg-black-gradient absolute top-16 right-0 mx-4 my-2 min-w-[160px] rounded-xl sidebar`}
+          className={`${toggle ? "flex" : "hidden"
+            } p-6 bg-black-gradient absolute top-16 right-0 mx-4 my-2 min-w-[160px] rounded-xl sidebar`}
         >
           <ul className="list-none flex flex-col items-center flex-1">
             {navLinks.map((nav) => (

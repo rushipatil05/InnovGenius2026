@@ -138,24 +138,24 @@ export const footerLinks: FooterLink[] = [
   {
     title: "Useful Links",
     links: [
-      { name: "Content", link: "https://www.hoobank.com/content/" },
-      { name: "How it Works", link: "https://www.hoobank.com/how-it-works/" },
-      { name: "Create", link: "https://www.hoobank.com/create/" },
-      { name: "Explore", link: "https://www.hoobank.com/explore/" },
+      { name: "Content", link: "https://www.aurora.com/content/" },
+      { name: "How it Works", link: "https://www.aurora.com/how-it-works/" },
+      { name: "Create", link: "https://www.aurora.com/create/" },
+      { name: "Explore", link: "https://www.aurora.com/explore/" },
       {
         name: "Terms & Services",
-        link: "https://www.hoobank.com/terms-and-services/",
+        link: "https://www.aurora.com/terms-and-services/",
       },
     ],
   },
   {
     title: "Community",
     links: [
-      { name: "Help Center", link: "https://www.hoobank.com/help-center/" },
-      { name: "Partners", link: "https://www.hoobank.com/partners/" },
-      { name: "Suggestions", link: "https://www.hoobank.com/suggestions/" },
-      { name: "Blog", link: "https://www.hoobank.com/blog/" },
-      { name: "Newsletters", link: "https://www.hoobank.com/newsletters/" },
+      { name: "Help Center", link: "https://www.aurora.com/help-center/" },
+      { name: "Partners", link: "https://www.aurora.com/partners/" },
+      { name: "Suggestions", link: "https://www.aurora.com/suggestions/" },
+      { name: "Blog", link: "https://www.aurora.com/blog/" },
+      { name: "Newsletters", link: "https://www.aurora.com/newsletters/" },
     ],
   },
   {
@@ -163,11 +163,11 @@ export const footerLinks: FooterLink[] = [
     links: [
       {
         name: "Our Partner",
-        link: "https://www.hoobank.com/our-partner/",
+        link: "https://www.aurora.com/our-partner/",
       },
       {
         name: "Become a Partner",
-        link: "https://www.hoobank.com/become-a-partner/",
+        link: "https://www.aurora.com/become-a-partner/",
       },
     ],
   },

@@ -6,15 +6,15 @@ import type { FooterLink, SocialMedia } from "../../constants";
 const Footer = () => {
   return (
     <section className={`${styles.flexCenter} ${styles.paddingY} flex-col`}>
-      
+
       {/* Links Section */}
       <div className={`${styles.flexStart} md:flex-row flex-col mb-8 w-full`}>
-        
+
         {/* Logo + Description */}
         <div className="flex flex-1 flex-col justify-start mr-10">
           <img
             src={logo}
-            alt="HooBank"
+            alt="Aurora"
             className="w-[266px] h-[72px] object-contain"
           />
 
@@ -38,11 +38,10 @@ const Footer = () => {
                 {footerLink.links.map((link, index: number) => (
                   <li
                     key={link.name}
-                    className={`font-poppins font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary cursor-pointer ${
-                      index !== footerLink.links.length - 1
+                    className={`font-poppins font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary cursor-pointer ${index !== footerLink.links.length - 1
                         ? "mb-4"
                         : "mb-0"
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </li>
@@ -72,9 +71,8 @@ const Footer = () => {
               <img
                 src={social.icon}
                 alt={social.id}
-                className={`w-[21px] h-[21px] object-contain cursor-pointer hover:invert-[30%] transition ease-in-out duration-150 ${
-                  i !== socialMedia.length - 1 ? "mr-6" : "mr-0"
-                }`}
+                className={`w-[21px] h-[21px] object-contain cursor-pointer hover:invert-[30%] transition ease-in-out duration-150 ${i !== socialMedia.length - 1 ? "mr-6" : "mr-0"
+                  }`}
               />
             </a>
           ))}
