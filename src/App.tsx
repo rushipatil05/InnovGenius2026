@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { TamboProvider } from "@tambo-ai/react";
+import { tamboComponents, tamboTools } from "./lib/tambo";
 
 import LandingPage from "./components/Landing/LandingPage";
 import Login from "./components/Auth/Login";
@@ -9,6 +11,8 @@ import UserDashboard from "./components/Dashboards/UserDashboard";
 import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
 import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
 import { LanguageProvider } from "./contexts/LanguageContext";
+
+const TAMBO_API_KEY = import.meta.env.VITE_TAMBO_API_KEY as string;
 
 function DashboardRouter() {
   const { user } = useAuth();
@@ -32,24 +36,34 @@ function AppContent() {
   const navigate = useNavigate();
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<LandingPage onGetStarted={() => navigate('/login')} />}
-      />
-      <Route
-        path="/login"
-        element={user ? <Navigate to="/dashboard" /> : <Login />}
-      />
-      <Route
-        path="/signup"
-        element={user ? <Navigate to="/dashboard" /> : <Signup />}
-      />
-      <Route
-        path="/dashboard"
-        element={<DashboardRouter />}
-      />
-    </Routes>
+    // TamboProvider is INSIDE AuthProvider so it can read user.id as userKey
+    // userKey is required by Tambo to mark the session as "identified" — without
+    // it submit() silently throws "Cannot submit: authentication is not ready"
+    <TamboProvider
+      apiKey={TAMBO_API_KEY}
+      components={tamboComponents}
+      tools={tamboTools}
+      userKey={user?.id ?? "anonymous"}
+    >
+      <Routes>
+        <Route
+          path="/"
+          element={<LandingPage onGetStarted={() => navigate('/login')} />}
+        />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" /> : <Login />}
+        />
+        <Route
+          path="/signup"
+          element={user ? <Navigate to="/dashboard" /> : <Signup />}
+        />
+        <Route
+          path="/dashboard"
+          element={<DashboardRouter />}
+        />
+      </Routes>
+    </TamboProvider>
   );
 }
 

@@ -2,18 +2,28 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
 import { Application } from '../../types';
-import { FileText, CheckCircle, XCircle, Clock, Plus, ArrowLeft } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Clock, Plus, ArrowLeft, Trash2, AlertTriangle, X } from 'lucide-react';
 import AccountOpeningForm from './AccountOpeningForm';
-// import styles from '../../styles';
 
 interface AccountServicesProps {
     onBack: () => void;
+    onRegisterFormFill?: (
+        cb: (data: {
+            dob?: string;
+            gender?: string;
+            maritalStatus?: string;
+            parentsName?: string;
+            nationality?: string;
+        }) => void
+    ) => void;
 }
 
-export default function AccountServices({ onBack }: AccountServicesProps) {
+export default function AccountServices({ onBack, onRegisterFormFill }: AccountServicesProps) {
     const { user } = useAuth();
     const [applications, setApplications] = useState<Application[]>([]);
     const [showNewApplicationForm, setShowNewApplicationForm] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Application | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         loadApplications();
@@ -23,12 +33,23 @@ export default function AccountServices({ onBack }: AccountServicesProps) {
         const allApplications = storage.getApplications();
         const userApplications = allApplications.filter(app => app.userId === user?.id);
         setApplications(userApplications);
-        // If no applications, show form by default
         if (userApplications.length === 0) {
             setShowNewApplicationForm(true);
         } else {
             setShowNewApplicationForm(false);
         }
+    };
+
+    const handleDeleteConfirm = () => {
+        if (!deleteTarget) return;
+        setDeleteLoading(true);
+        // Small delay for UX feedback
+        setTimeout(() => {
+            storage.deleteApplication(deleteTarget.id);
+            setDeleteTarget(null);
+            setDeleteLoading(false);
+            loadApplications();
+        }, 600);
     };
 
     const getRiskColor = (category: string) => {
@@ -76,9 +97,11 @@ export default function AccountServices({ onBack }: AccountServicesProps) {
                             </button>
                         )}
                     </div>
-                    {/* Form container styled in the form component itself usually, but we wrap it here just in case */}
                     <div className="bg-black-gradient-2 p-6 rounded-[20px] border border-dimWhite/10 shadow-2xl">
-                        <AccountOpeningForm onSuccess={loadApplications} />
+                        <AccountOpeningForm
+                            onSuccess={loadApplications}
+                            onRegisterFormFill={onRegisterFormFill}
+                        />
                     </div>
                 </div>
             ) : (
@@ -118,11 +141,12 @@ export default function AccountServices({ onBack }: AccountServicesProps) {
                                             <th className="px-6 py-4 text-left text-xs font-medium text-dimWhite uppercase tracking-wider font-poppins">Risk Level</th>
                                             <th className="px-6 py-4 text-left text-xs font-medium text-dimWhite uppercase tracking-wider font-poppins">Status</th>
                                             <th className="px-6 py-4 text-left text-xs font-medium text-dimWhite uppercase tracking-wider font-poppins">Details</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-dimWhite uppercase tracking-wider font-poppins">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-dimWhite/10">
                                         {applications.map((app) => (
-                                            <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                                            <tr key={app.id} className="hover:bg-white/5 transition-colors group">
                                                 <td className="px-6 py-4 text-sm text-white font-poppins">
                                                     {new Date(app.submittedAt).toLocaleDateString()}
                                                 </td>
@@ -143,12 +167,98 @@ export default function AccountServices({ onBack }: AccountServicesProps) {
                                                 <td className="px-6 py-4 text-sm text-dimWhite font-poppins">
                                                     Score: {app.riskScore}
                                                 </td>
+                                                <td className="px-6 py-4">
+                                                    <button
+                                                        onClick={() => setDeleteTarget(app)}
+                                                        title="Delete application"
+                                                        className="flex items-center gap-1.5 text-xs text-red-400/70 hover:text-red-400 hover:bg-red-400/10 px-2.5 py-1.5 rounded-lg transition-all font-poppins opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        Delete
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Delete Confirmation Modal ─────────────────────────────────── */}
+            {deleteTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => !deleteLoading && setDeleteTarget(null)}
+                    />
+
+                    {/* Modal */}
+                    <div className="relative bg-[#1a1a2e] border border-red-500/20 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-fade-in-up">
+                        {/* Close button */}
+                        <button
+                            onClick={() => setDeleteTarget(null)}
+                            disabled={deleteLoading}
+                            className="absolute top-4 right-4 text-dimWhite hover:text-white transition disabled:opacity-40"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        {/* Icon */}
+                        <div className="flex justify-center mb-4">
+                            <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                                <AlertTriangle className="w-7 h-7 text-red-400" />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <h3 className="text-lg font-bold text-white text-center font-poppins mb-2">
+                            Delete Application?
+                        </h3>
+                        <p className="text-sm text-dimWhite text-center font-poppins mb-1">
+                            This will permanently delete your
+                        </p>
+                        <p className="text-sm text-white text-center font-poppins font-semibold mb-1">
+                            {(deleteTarget.accountType || 'Savings').charAt(0).toUpperCase() + (deleteTarget.accountType || 'Savings').slice(1)} Account Application
+                        </p>
+                        <p className="text-xs text-dimWhite/60 text-center font-poppins mb-6">
+                            Submitted on {new Date(deleteTarget.submittedAt).toLocaleDateString()} · Status: {deleteTarget.status}
+                        </p>
+
+                        <p className="text-xs text-red-400/80 text-center font-poppins mb-6 bg-red-400/5 border border-red-400/10 rounded-lg px-3 py-2">
+                            ⚠️ This action cannot be undone.
+                        </p>
+
+                        {/* Buttons */}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteTarget(null)}
+                                disabled={deleteLoading}
+                                className="flex-1 px-4 py-2.5 rounded-lg border border-dimWhite/20 text-dimWhite hover:text-white hover:border-white/40 transition font-poppins text-sm disabled:opacity-40"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteConfirm}
+                                disabled={deleteLoading}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold font-poppins text-sm transition flex items-center justify-center gap-2 disabled:opacity-60"
+                            >
+                                {deleteLoading ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Deleting…
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                        Yes, Delete
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
