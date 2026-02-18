@@ -10,6 +10,9 @@ import Signup from "./components/Auth/Signup";
 import UserDashboard from "./components/Dashboards/UserDashboard";
 import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
 import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
+import { LanguageProvider } from "./contexts/LanguageContext";
+
+const TAMBO_API_KEY = import.meta.env.VITE_TAMBO_API_KEY as string;
 
 const TAMBO_API_KEY = import.meta.env.VITE_TAMBO_API_KEY as string;
 
@@ -68,9 +71,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 
