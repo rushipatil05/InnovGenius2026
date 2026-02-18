@@ -5,6 +5,7 @@ import { calculateRisk } from '../../utils/riskEngine';
 import { Application } from '../../types';
 import { ChevronRight, ChevronLeft, Save, CheckCircle, FileX2, FileCheck2, Paperclip } from 'lucide-react';
 import { formFillBridge } from '../../lib/formFillBridge';
+import { appContextBridge } from '../../lib/appContextBridge';
 
 
 interface AccountOpeningFormProps {
@@ -245,30 +246,59 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
 
     // ── Tambo integration: register fill callback via global bridge ─────────
     useEffect(() => {
-        // Register with global bridge (used by PersonalDetailsFormFiller)
+        // Register with global bridge (used by PersonalDetailsFormFiller / ContactDetailsFormFiller)
         formFillBridge.register((data) => {
-            if (data.fullName) handleChange('fullName' as keyof Application, data.fullName);
+            // Personal Details (Step 1)
+            if (data.fullName) handleChange('fullName', data.fullName);
             if (data.dob) handleChange('dob', data.dob);
             if (data.gender) handleChange('gender', data.gender);
             if (data.maritalStatus) handleChange('maritalStatus', data.maritalStatus);
             if (data.parentsName) handleChange('parentsName', data.parentsName);
             if (data.nationality) handleChange('nationality', data.nationality);
+
+            // Contact Details (Step 2)
+            if (data.mobileNumber) handleChange('mobileNumber', data.mobileNumber);
+            if (data.email) handleChange('email', data.email);
+            if (data.currentAddress) handleChange('currentAddress', data.currentAddress);
+            if (data.permanentAddress) handleChange('permanentAddress', data.permanentAddress);
+            if (data.city) handleChange('city', data.city);
+            if (data.state) handleChange('state', data.state);
+            if (data.pincode) handleChange('pincode', data.pincode);
+            if (data.permanentAddressSame) {
+                // If user says "same as current", we can auto-fill permanent address if current is set
+                // But the form handles this via checkbox logic usually. 
+                // We'll just trust the AI provides explicit permanentAddress if needed, or we rely on user action.
+                // Or better: trigger the checkbox logic if possible? No, uncontrolled component.
+                // We'll just set permanentAddress to currentAddress if available in data or state
+                if (data.currentAddress || formData.currentAddress) {
+                    handleChange('permanentAddress', data.currentAddress || formData.currentAddress);
+                }
+            }
         });
 
-        // Also register via legacy prop callback if provided
-        if (onRegisterFormFill) {
-            onRegisterFormFill((data) => {
-                if (data.dob) handleChange('dob', data.dob);
-                if (data.gender) handleChange('gender', data.gender);
-                if (data.maritalStatus) handleChange('maritalStatus', data.maritalStatus);
-                if (data.parentsName) handleChange('parentsName', data.parentsName);
-                if (data.nationality) handleChange('nationality', data.nationality);
-            });
-        }
+        // Update App Context for auto-context awareness
+        const stepInfo = {
+            1: { name: 'Personal Details', req: ['dob', 'parentsName'], opt: ['fullName', 'gender'] },
+            2: { name: 'Contact Information', req: ['mobileNumber', 'currentAddress', 'city', 'state', 'pincode'], opt: ['email'] },
+            3: { name: 'KYC Documents', req: ['panNumber', 'aadhaarNumber'], opt: [] },
+            4: { name: 'Account Details', req: ['branchPreference', 'initialDeposit'], opt: [] },
+            5: { name: 'Financial Details', req: ['employment', 'annualIncome'], opt: [] },
+            6: { name: 'Nominee Details', req: [], opt: ['nomineeName'] },
+            7: { name: 'Services', req: [], opt: ['debitCard'] },
+        }[step] || { name: 'Unknown', req: [], opt: [] };
+
+        appContextBridge.update({
+            currentStep: step,
+            stepName: stepInfo.name,
+            requiredFields: stepInfo.req,
+            optionalFields: stepInfo.opt,
+            view: 'account-opening',
+            notes: step === 2 ? 'Address proof not needed yet.' : ''
+        });
 
         return () => formFillBridge.unregister();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [onRegisterFormFill]);
+    }, [step]); // Re-register when step changes to update context
 
     const handleSubmit = () => {
         if (!validateStep(step)) return;
