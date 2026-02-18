@@ -4,12 +4,23 @@
  */
 
 type FillData = {
+    // Personal Details
     fullName?: string;
     dob?: string;
     gender?: string;
     maritalStatus?: string;
     parentsName?: string;
     nationality?: string;
+
+    // Contact Information
+    mobileNumber?: string;
+    email?: string;
+    currentAddress?: string;
+    permanentAddress?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    permanentAddressSame?: boolean;
 };
 
 type FillFn = (data: FillData) => void;

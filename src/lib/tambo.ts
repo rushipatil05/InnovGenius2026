@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import PersonalDetailsFormFiller from '../components/Dashboards/PersonalDetailsFormFiller';
 import NavigateToService from '../components/Dashboards/NavigateToService';
+import ContactDetailsFormFiller from '../components/Dashboards/ContactDetailsFormFiller';
+import { appContextBridge } from './appContextBridge';
 
 /**
  * Tambo component registry.
@@ -28,38 +30,35 @@ export const tamboComponents = [
     {
         name: 'PersonalDetailsFormFiller',
         description:
-            'Renders a summary card of personal details and auto-fills Step 1 (Personal Details) of the bank account opening form. ' +
-            'Use this ONLY when the user is already on the account opening form AND provides their personal information ' +
-            'like date of birth, gender, marital status, parent name, or nationality. ' +
-            'Do NOT use this to navigate — use NavigateToService for navigation.',
+            'Renders a summary card and auto-fills Step 1 (Personal Details) of the account opening form. ' +
+            'Use this when the user provides personal info like DOB, gender, marital status, parent name. ' +
+            'Do NOT use if the user is providing contact info (mobile, email, address) - use ContactDetailsFormFiller instead.',
         component: PersonalDetailsFormFiller,
         propsSchema: z.object({
-            fullName: z
-                .string()
-                .optional()
-                .describe("The applicant's full name"),
-            dob: z
-                .string()
-                .optional()
-                .describe(
-                    "Date of birth in YYYY-MM-DD format, e.g. '1998-05-14'. Must be 18+ years ago from today."
-                ),
-            gender: z
-                .enum(['male', 'female', 'other'])
-                .optional()
-                .describe("Gender: 'male', 'female', or 'other'"),
-            maritalStatus: z
-                .enum(['single', 'married', 'divorced', 'widowed'])
-                .optional()
-                .describe("Marital status: 'single', 'married', 'divorced', or 'widowed'"),
-            parentsName: z
-                .string()
-                .optional()
-                .describe("Full name of the applicant's father or mother"),
-            nationality: z
-                .string()
-                .optional()
-                .describe("Nationality, e.g. 'Indian'. Defaults to 'Indian' if not specified."),
+            fullName: z.string().optional(),
+            dob: z.string().optional().describe("YYYY-MM-DD format"),
+            gender: z.enum(['male', 'female', 'other']).optional(),
+            maritalStatus: z.enum(['single', 'married', 'divorced', 'widowed']).optional(),
+            parentsName: z.string().optional(),
+            nationality: z.string().optional(),
+        }),
+    },
+    {
+        name: 'ContactDetailsFormFiller',
+        description:
+            'Renders a summary card and auto-fills Step 2 (Contact Information) of the account opening form. ' +
+            'Use this when the user provides contact info like mobile number, email, address, city, state, pin code. ' +
+            'Also use this if the user says their permanent address is the same as current address.',
+        component: ContactDetailsFormFiller,
+        propsSchema: z.object({
+            mobileNumber: z.string().optional().describe("10-digit mobile number"),
+            email: z.string().optional().describe("Email address"),
+            currentAddress: z.string().optional().describe("Current residential address"),
+            permanentAddressSame: z.boolean().optional().describe("True if user says permanent address is same as current"),
+            permanentAddress: z.string().optional().describe("Permanent address. If same as current, leave empty and set permanentAddressSame=true."),
+            city: z.string().optional(),
+            state: z.string().optional(),
+            pincode: z.string().optional().describe("6-digit PIN code"),
         }),
     },
 ];
@@ -71,7 +70,7 @@ export const tamboTools = [
     {
         name: 'get-app-context',
         description:
-            'Returns context about the current app state: which view is active, what services are available, and what the user can do.',
+            'Returns context about the current app state: available services and general navigation status.',
         tool: () => ({
             availableServices: [
                 { id: 'account', label: 'Account Opening', available: true },
@@ -94,15 +93,17 @@ export const tamboTools = [
     {
         name: 'get-form-context',
         description:
-            'Returns context about which form step is currently active and what fields are required. Call this when the user is filling the account opening form.',
-        tool: () => ({
-            currentStep: 1,
-            stepName: 'Personal Details',
-            requiredFields: ['dob', 'parentsName'],
-            optionalFields: ['fullName', 'gender', 'maritalStatus', 'nationality'],
-            notes:
-                'Full Name is editable. Date of birth must be at least 18 years in the past.',
-        }),
+            'Returns context about the ACTIVE form step. Call this to know which fields to ask for (Personal vs Contact vs KYC).',
+        tool: () => {
+            const ctx = appContextBridge.get();
+            return {
+                currentStep: ctx.currentStep,
+                stepName: ctx.stepName,
+                requiredFields: ctx.requiredFields,
+                optionalFields: ctx.optionalFields,
+                notes: ctx.notes || '',
+            };
+        },
         inputSchema: z.object({}),
         outputSchema: z.object({
             currentStep: z.number(),
