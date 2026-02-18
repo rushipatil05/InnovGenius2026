@@ -105,25 +105,25 @@ export const feedback: Feedback[] = [
   {
     id: "feedback-1",
     content:
-      "Money is only a tool. It will take you wherever you wish, but it will not replace you as the driver.",
+      "The real-time risk engine reduced manual verification time by 60% while maintaining full compliance",
     name: "Herman Jensen",
-    title: "Founder & Leader",
+    title: "Head of Compliance",
     img: people01,
   },
   {
     id: "feedback-2",
     content:
-      "Money makes your life easier. If you're lucky to have it, you're lucky.",
+      "Our onboarding approval cycle dropped from days to minutes using the AI conversational flow.",
     name: "Steve Mark",
-    title: "Founder & Leader",
+    title: "Operations Director",
     img: people02,
   },
   {
     id: "feedback-3",
     content:
-      "It is usually people in the money business, finance, and international trade that are really rich.",
+      "The audit log transparency makes regulatory reviews seamless and stress-free",
     name: "Kenn Gallagher",
-    title: "Founder & Leader",
+    title: "Senior Risk Officer",
     img: people03,
   },
 ];

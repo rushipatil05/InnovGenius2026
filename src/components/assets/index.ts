@@ -23,8 +23,14 @@ import twitter from "./twitter.svg";
 import people01 from "./people01.png";
 import people02 from "./people02.png";
 import people03 from "./people03.png";
-import saving from "./saving.svg"
-import meter from "./meter.png"
+import saving from "./saving.svg";
+import meter from "./meter.png";
+import earthdark from "./earth-dark.jpg";
+import countries110m from "./countries_110m.json";
+import land110m from "./land_10m.json";
+import randomLocations from "./random-locations.json";
+import texture from "./texture.jpg";
+import profileImage from "./profile-image.jpg";
 export {
   airbnb,
   bill,
@@ -53,4 +59,10 @@ export {
   people03,
   saving,
   meter,
+  earthdark,
+  countries110m,
+  land110m,
+  randomLocations,
+  texture,
+  profileImage,
 };

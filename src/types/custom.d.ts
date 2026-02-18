@@ -1,0 +1,9 @@
+declare module "../Earth/finished";
+declare module "../Earth/basic-image";
+declare module "../Earth/geojson-polygon";
+declare module "../Earth/geojson-hexagon";
+declare module "../Earth/arcs-data";
+declare module "../Earth/rings-data";
+declare module "../Earth/html-marker";
+declare module "../Earth/custom-layer";
+declare module "../Earth/not-found";
