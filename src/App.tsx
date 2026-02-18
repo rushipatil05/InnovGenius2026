@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 import LandingPage from "./components/Landing/LandingPage";
@@ -9,25 +9,10 @@ import UserDashboard from "./components/Dashboards/UserDashboard";
 import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
 import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
 
-function AppContent() {
+function DashboardRouter() {
   const { user } = useAuth();
 
-  const [showAuth, setShowAuth] = useState(false);
-  const [showLogin, setShowLogin] = useState(true);
-
-  if (!user) {
-    // Show Landing Page first
-    if (!showAuth) {
-      return <LandingPage onGetStarted={() => setShowAuth(true)} />;
-    }
-
-    // Then show login/signup
-    return showLogin ? (
-      <Login onSwitchToSignup={() => setShowLogin(false)} />
-    ) : (
-      <Signup onSwitchToLogin={() => setShowLogin(true)} />
-    );
-  }
+  if (!user) return <Navigate to="/login" />;
 
   switch (user.role) {
     case "user":
@@ -39,6 +24,32 @@ function AppContent() {
     default:
       return <UserDashboard />;
   }
+}
+
+function AppContent() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<LandingPage onGetStarted={() => navigate('/login')} />}
+      />
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/dashboard" /> : <Login />}
+      />
+      <Route
+        path="/signup"
+        element={user ? <Navigate to="/dashboard" /> : <Signup />}
+      />
+      <Route
+        path="/dashboard"
+        element={<DashboardRouter />}
+      />
+    </Routes>
+  );
 }
 
 function App() {

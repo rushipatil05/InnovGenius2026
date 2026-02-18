@@ -1,5 +1,5 @@
 import React from "react";
-import { apple, bill, google,meter } from "../assets";
+import { bill } from "../assets";
 import styles, { layout } from "../../styles";
 
 const Billing: React.FC = () => {
@@ -20,12 +20,12 @@ const Billing: React.FC = () => {
       <div className={layout.sectionInfo}>
         {/* Info */}
         <h2 className={styles.heading2}>
-          Complete Control Over 
+          Complete Control Over
           <br className="sm:block hidden" /> Risk & Compliance.
         </h2>
 
         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-          Monitor applications, review risk explanations, approve or reject accounts, 
+          Monitor applications, review risk explanations, approve or reject accounts,
           and track every action with a fully auditable compliance system.
         </p>
 
