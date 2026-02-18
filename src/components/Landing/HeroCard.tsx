@@ -76,10 +76,16 @@ export default function HeroCard() {
           repeat: Infinity,
           ease: "easeInOut",
         }}
+        // className="relative w-full h-full rounded-2xl
+        //            bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#000000]
+        //            shadow-[0_80px_160px_rgba(0,0,0,0.75)]
+        //            overflow-hidden"
         className="relative w-full h-full rounded-2xl
-                   bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#000000]
-                   shadow-[0_80px_160px_rgba(0,0,0,0.75)]
-                   overflow-hidden"
+           bg-white/5
+           backdrop-blur-sm
+           border border-white/30
+           shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+           overflow-hidden"
       >
         <CardDetails />
       </motion.div>
