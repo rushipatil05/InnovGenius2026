@@ -16,7 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSignupClick }) => {
       <img
         src={logo}
         alt="HooBank Logo"
-        className="w-[124px] h-[32px] object-contain"
+        className="w-[120px] h-[100px] object-contain"
       />
 
       {/* Desktop */}

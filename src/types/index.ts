@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   name: string;
   createdAt: string;
+  language?: string;
 }
 
 export interface Application {

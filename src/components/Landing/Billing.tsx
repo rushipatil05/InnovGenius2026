@@ -5,7 +5,7 @@ import styles, { layout } from "../../styles";
 const Billing: React.FC = () => {
   return (
     <section id="product" className={layout.sectionReverse}>
-      <div className={layout.sectionImgReverse}>
+      <div className={`${layout.sectionImgReverse} animate-floatSlow`}>
         <img
           src={bill}
           alt="Billing"

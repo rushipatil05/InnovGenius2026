@@ -8,6 +8,7 @@ import Signup from "./components/Auth/Signup";
 import UserDashboard from "./components/Dashboards/UserDashboard";
 import OfficerDashboard from "./components/Dashboards/OfficerDashboard";
 import AuditorDashboard from "./components/Dashboards/AuditorDashboard";
+import { LanguageProvider } from "./contexts/Languagecontext";
 
 function DashboardRouter() {
   const { user } = useAuth();
@@ -54,9 +55,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

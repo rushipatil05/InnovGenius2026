@@ -3,6 +3,15 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      keyframes: {
+        floatSlow: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+      },
+      animation: {
+        floatSlow: 'floatSlow 3s ease-in-out infinite',
+      },
       colors: {
         primary: "#10002b",
         secondary: "#e0aaff",
