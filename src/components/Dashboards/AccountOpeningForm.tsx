@@ -1,13 +1,23 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
 import { calculateRisk } from '../../utils/riskEngine';
 import { Application } from '../../types';
 import { ChevronRight, ChevronLeft, Save, CheckCircle, FileX2, FileCheck2, Paperclip } from 'lucide-react';
+import { formFillBridge } from '../../lib/formFillBridge';
 
 
 interface AccountOpeningFormProps {
     onSuccess: () => void;
+    onRegisterFormFill?: (
+        cb: (data: {
+            dob?: string;
+            gender?: string;
+            maritalStatus?: string;
+            parentsName?: string;
+            nationality?: string;
+        }) => void
+    ) => void;
 }
 
 interface AttachmentMap {
@@ -18,7 +28,7 @@ interface AttachmentMap {
     [key: string]: File | undefined;
 }
 
-export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProps) {
+export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: AccountOpeningFormProps) {
     const { user } = useAuth();
     const [attachments, setAttachments] = useState<AttachmentMap>({});
     const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -95,8 +105,9 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
         );
     };
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<Partial<Application>>({
+    const [formData, setFormData] = useState<Partial<Application> & { fullName?: string }>({
         // Personal
+        fullName: user?.name || '',
         dob: '',
         gender: 'male',
         maritalStatus: 'single',
@@ -232,6 +243,33 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
         }
     };
 
+    // ── Tambo integration: register fill callback via global bridge ─────────
+    useEffect(() => {
+        // Register with global bridge (used by PersonalDetailsFormFiller)
+        formFillBridge.register((data) => {
+            if (data.fullName) handleChange('fullName' as keyof Application, data.fullName);
+            if (data.dob) handleChange('dob', data.dob);
+            if (data.gender) handleChange('gender', data.gender);
+            if (data.maritalStatus) handleChange('maritalStatus', data.maritalStatus);
+            if (data.parentsName) handleChange('parentsName', data.parentsName);
+            if (data.nationality) handleChange('nationality', data.nationality);
+        });
+
+        // Also register via legacy prop callback if provided
+        if (onRegisterFormFill) {
+            onRegisterFormFill((data) => {
+                if (data.dob) handleChange('dob', data.dob);
+                if (data.gender) handleChange('gender', data.gender);
+                if (data.maritalStatus) handleChange('maritalStatus', data.maritalStatus);
+                if (data.parentsName) handleChange('parentsName', data.parentsName);
+                if (data.nationality) handleChange('nationality', data.nationality);
+            });
+        }
+
+        return () => formFillBridge.unregister();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onRegisterFormFill]);
+
     const handleSubmit = () => {
         if (!validateStep(step)) return;
 
@@ -326,7 +364,13 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className={labelClasses}>Full Name</label>
-                                    <input type="text" value={user?.name} disabled className={`${inputClasses} opacity-50 cursor-not-allowed`} />
+                                    <input
+                                        type="text"
+                                        value={(formData as any).fullName ?? user?.name ?? ''}
+                                        onChange={e => handleChange('fullName' as keyof Application, e.target.value)}
+                                        className={inputClasses}
+                                        placeholder="Enter your full name"
+                                    />
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Date of Birth <span className="text-red-400">*</span></label>
