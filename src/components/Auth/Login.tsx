@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import styles from '../../styles';
 import { logo } from '../assets';
 import LanguageSelection from './LanguageSelection';
-import { useLanguage } from '../../contexts/Languagecontext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Login() {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
