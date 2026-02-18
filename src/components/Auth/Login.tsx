@@ -84,7 +84,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
+                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
                 placeholder="you@example.com"
               />
             </div>
@@ -97,7 +97,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
+                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
                 placeholder="••••••••"
               />
             </div>
@@ -114,7 +114,7 @@ export default function Login() {
             Don't have an account?{' '}
             <Link
               to="/signup"
-              className="text-secondary font-semibold hover:text-white transition-colors"
+              className="text-cyan-400 font-semibold hover:text-white transition-colors"
             >
               Sign Up
             </Link>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { CreditCard, FileText, BadgeDollarSign, Landmark, ShieldCheck, PieChart, ArrowRight, TrendingUp, Shield, Smartphone } from 'lucide-react';
 import styles from '../../styles';
 
@@ -39,7 +38,6 @@ const carouselContent = [
 ];
 
 export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
-    // const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
