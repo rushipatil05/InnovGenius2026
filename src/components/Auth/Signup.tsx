@@ -91,7 +91,7 @@ export default function Signup() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
+                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
                 placeholder="John Doe"
               />
             </div>
@@ -104,7 +104,7 @@ export default function Signup() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
+                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
                 placeholder="you@example.com"
               />
             </div>
@@ -117,7 +117,7 @@ export default function Signup() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
+                className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white placeholder-dimWhite/50"
                 placeholder="••••••••"
               />
             </div>
@@ -130,7 +130,7 @@ export default function Signup() {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition text-white appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white appearance-none cursor-pointer"
                 >
                   <option value="user" className="bg-primary text-white">User (Apply for Services)</option>
                   <option value="officer" className="bg-primary text-white">Officer (Review Applications)</option>
@@ -154,7 +154,7 @@ export default function Signup() {
             Already have an account?{' '}
             <Link
               to="/login"
-              className="text-secondary font-semibold hover:text-white transition-colors"
+              className="text-cyan-400 font-semibold hover:text-white transition-colors"
             >
               Sign In
             </Link>
