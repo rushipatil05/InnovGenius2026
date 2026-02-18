@@ -1,4 +1,4 @@
-import { useLanguage } from "../../contexts/Languagecontext";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function LanguageSelection({ onClose }: any) {
   const { setLanguage } = useLanguage();
