@@ -4,6 +4,7 @@ import { LogOut, LayoutDashboard } from 'lucide-react';
 import ServicesHub from './ServicesHub';
 import AccountServices from './AccountServices';
 import styles from '../../styles';
+import OnboardingAssistant from './OnboardingAssistant';
 
 type DashboardView = 'home' | 'account-opening';
 
@@ -53,6 +54,7 @@ export default function UserDashboard() {
 
         </div>
       </div>
+      <OnboardingAssistant />
     </div>
   );
 }
