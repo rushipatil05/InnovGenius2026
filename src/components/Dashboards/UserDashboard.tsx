@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LogOut, LayoutDashboard } from 'lucide-react';
 import ServicesHub from './ServicesHub';
 import AccountServices from './AccountServices';
 import styles from '../../styles';
+import OnboardingAssistant from './OnboardingAssistant';
+import { navBridge } from '../../lib/navBridge';
 
 type DashboardView = 'home' | 'account-opening';
 
@@ -11,18 +13,37 @@ export default function UserDashboard() {
   const { user, logout } = useAuth();
   const [currentView, setCurrentView] = useState<DashboardView>('home');
 
+  // Use a ref so the callback is always fresh (no stale closure)
+  const setViewRef = useRef(setCurrentView);
+  setViewRef.current = setCurrentView;
+
+  // useLayoutEffect fires synchronously before paint and before child useEffects —
+  // guarantees navBridge is registered before NavigateToService mounts and calls navigate()
+  useLayoutEffect(() => {
+    navBridge.register((service) => {
+      if (service === 'account') {
+        setViewRef.current('account-opening');
+      }
+    });
+    return () => navBridge.unregister();
+  }, []);
+
   const handleServiceSelect = (service: string) => {
     if (service === 'account') {
       setCurrentView('account-opening');
     }
-    // Other services can be added here
   };
 
   return (
     <div className="min-h-screen bg-primary w-full overflow-hidden">
       {/* Navbar */}
-      <nav className={`w-full flex py-6 justify-between items-center navbar ${styles.paddingX} border-b border-dimWhite/10 sticky top-0 z-50 bg-primary/90 backdrop-blur`}>
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('home')}>
+      <nav
+        className={`w-full flex py-6 justify-between items-center navbar ${styles.paddingX} border-b border-dimWhite/10 sticky top-0 z-50 bg-primary/90 backdrop-blur`}
+      >
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => setCurrentView('home')}
+        >
           <LayoutDashboard className="w-8 h-8 text-secondary" />
           <div>
             <h1 className="text-xl font-bold text-white font-poppins">InnovGenius</h1>
@@ -42,17 +63,20 @@ export default function UserDashboard() {
       {/* Main Content */}
       <div className={`bg-primary ${styles.flexStart} ${styles.paddingX}`}>
         <div className={`${styles.boxWidth} py-8`}>
-
           {currentView === 'home' && (
             <ServicesHub onServiceSelect={handleServiceSelect} />
           )}
 
           {currentView === 'account-opening' && (
-            <AccountServices onBack={() => setCurrentView('home')} />
+            <AccountServices
+              onBack={() => setCurrentView('home')}
+            />
           )}
-
         </div>
       </div>
+
+      {/* AI Onboarding Assistant — always visible, context-aware */}
+      <OnboardingAssistant currentView={currentView} />
     </div>
   );
 }

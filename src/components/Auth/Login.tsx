@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from '../../styles';
 import { logo } from '../assets';
+import LanguageSelection from './LanguageSelection';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Login() {
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const { t } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const storedLang = localStorage.getItem('app_language');
+    if (!storedLang) {
+      setShowLanguageModal(true);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +52,7 @@ export default function Login() {
         {/* Content */}
         <div className="relative z-10 w-full max-w-lg">
           <Link to="/" className="mb-8 block">
-            <img src={logo} alt="HooBank" className="w-[180px] h-[48px] object-contain" />
+            <img src={logo} alt="Aurora" className="w-[180px] h-[48px] object-contain" />
           </Link>
 
           <h1 className={`${styles.heading2} mb-6`}>
@@ -63,7 +74,7 @@ export default function Login() {
 
         <div className="w-full max-w-md bg-black-gradient-2 p-8 rounded-2xl shadow-2xl border border-dimWhite/10 backdrop-blur-sm">
           <h2 className={styles.heading2 + " text-center text-[32px] mb-2"}>
-            Sign In
+            {t("signIn")}
           </h2>
           <p className={`${styles.paragraph} text-center text-[16px] mb-8`}>
             Access your secure account
@@ -121,6 +132,9 @@ export default function Login() {
           </p>
         </div>
       </div>
+      {showLanguageModal && (
+        <LanguageSelection onClose={() => setShowLanguageModal(false)} />
+      )}
     </div>
   );
 }

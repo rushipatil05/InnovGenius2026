@@ -49,6 +49,11 @@ export const storage = {
     }
   },
 
+  deleteApplication(id: string): void {
+    const applications = this.getApplications().filter(a => a.id !== id);
+    this.setApplications(applications);
+  },
+
   getApplicationById(id: string): Application | undefined {
     return this.getApplications().find(a => a.id === id);
   },

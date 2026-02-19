@@ -26,14 +26,14 @@ const carouselContent = [
         title: "Bank Securely",
         description: "Your security is our priority. Enhanced with 256-bit encryption and biometric verification.",
         icon: <Shield className="w-16 h-16 text-blue-400 mb-4" />,
-        bgClass: "bg-blue-gradient"
+        bgClass: "bg-black-gradient-2"
     },
     {
         id: 4,
         title: "Mobile First",
         description: "Bank on the go with our award-winning mobile app. Available on iOS and Android.",
-        icon: <Smartphone className="w-16 h-16 text-purple-400 mb-4" />,
-        bgClass: "bg-gray-gradient"
+        icon: <Smartphone className="w-16 h-16 text-yellow-300 mb-4" />,
+        bgClass: "bg-black-gradient-2"
     }
 ];
 
@@ -136,7 +136,6 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
                 </div>
             </div>
 
-            {/* Right Side - Services Grid (50%) */}
             <div className="md:w-1/2 w-full flex flex-col">
                 <h2 className="font-poppins font-semibold text-[24px] text-white mb-6 flex items-center">
                     Our Services <div className="h-[1px] bg-dimWhite/20 flex-1 ml-6"></div>
@@ -148,14 +147,13 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
                             key={service.id}
                             onClick={service.active ? service.action : undefined}
                             className={`
-                relative flex flex-col p-5 rounded-[16px] border transition-all duration-300 group
-                ${service.active
-                                    ? 'bg-primary/40 border-dimWhite/10 hover:border-secondary hover:bg-dimBlue/5 cursor-pointer'
-                                    : 'bg-primary/20 border-transparent opacity-60 cursor-not-allowed'}
-              `}
-                        >
+                                relative flex flex-col p-5 rounded-[16px] border transition-all duration-300 group
+                                ${service.active
+                                    ? 'bg-white/5 border-white/10 hover:border-secondary hover:bg-white/10 cursor-pointer'
+                                    : 'bg-white/5 border-transparent opacity-60 cursor-not-allowed'}
+                                `}>
                             <div className="flex justify-between items-start mb-3">
-                                <div className={`w-10 h-10 rounded-full flex justify-center items-center bg-dimBlue/10 group-hover:bg-secondary/20 transition-colors`}>
+                                <div className="w-10 h-10 rounded-full flex justify-center items-center bg-white/10 group-hover:bg-white/20 transition-colors">
                                     {service.icon}
                                 </div>
                                 {!service.active && (

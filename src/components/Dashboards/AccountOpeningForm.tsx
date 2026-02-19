@@ -1,20 +1,114 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
 import { calculateRisk } from '../../utils/riskEngine';
 import { Application } from '../../types';
-import { ChevronRight, ChevronLeft, Save, CheckCircle, Upload } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Save, CheckCircle, FileX2, FileCheck2, Paperclip } from 'lucide-react';
+import { formFillBridge } from '../../lib/formFillBridge';
+import { appContextBridge } from '../../lib/appContextBridge';
 
 
 interface AccountOpeningFormProps {
     onSuccess: () => void;
+    onRegisterFormFill?: (
+        cb: (data: {
+            dob?: string;
+            gender?: string;
+            maritalStatus?: string;
+            parentsName?: string;
+            nationality?: string;
+        }) => void
+    ) => void;
 }
 
-export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProps) {
+interface AttachmentMap {
+    pan?: File;
+    aadhaar?: File;
+    passport?: File;
+    photo?: File;
+    [key: string]: File | undefined;
+}
+
+export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: AccountOpeningFormProps) {
     const { user } = useAuth();
+    const [attachments, setAttachments] = useState<AttachmentMap>({});
+    const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+    const handleFileChange = (key: string, file: File | null) => {
+        if (!file) return;
+        const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+        if (!allowed.includes(file.type)) {
+            alert('Only JPG, PNG, or PDF files are allowed.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be under 5MB.');
+            return;
+        }
+        setAttachments(prev => ({ ...prev, [key]: file }));
+    };
+
+    const removeFile = (key: string) => {
+        setAttachments(prev => { const n = { ...prev }; delete n[key]; return n; });
+        if (fileInputRefs.current[key]) fileInputRefs.current[key]!.value = '';
+    };
+
+    const formatBytes = (bytes: number) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const FileUploadBox = ({ docKey, label, accept = 'image/*,application/pdf', hint = 'JPG, PNG or PDF · Max 5MB' }: { docKey: string; label: string; accept?: string; hint?: string }) => {
+        const file = attachments[docKey];
+        return (
+            <div className="space-y-1">
+                <label className="block text-sm font-medium text-dimWhite mb-2 font-poppins">{label}</label>
+                {file ? (
+                    <div className="flex items-center justify-between px-4 py-3 bg-cyan-400/10 border border-cyan-400/40 rounded-lg">
+                        <div className="flex items-center space-x-3 min-w-0">
+                            <FileCheck2 className="w-5 h-5 text-cyan-400 shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-sm text-white font-poppins truncate max-w-[180px]">{file.name}</p>
+                                <p className="text-xs text-dimWhite font-poppins">{formatBytes(file.size)}</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => removeFile(docKey)}
+                            className="ml-3 text-red-400 hover:text-red-300 transition-colors shrink-0"
+                            title="Remove file"
+                        >
+                            <FileX2 className="w-5 h-5" />
+                        </button>
+                    </div>
+                ) : (
+                    <div
+                        className="border-2 border-dashed border-dimWhite/30 rounded-lg p-5 text-center cursor-pointer hover:bg-white/5 hover:border-cyan-400 transition-all flex flex-col items-center justify-center gap-2 bg-dimBlue/5 group"
+                        onClick={() => fileInputRefs.current[docKey]?.click()}
+                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-cyan-400', 'bg-white/5'); }}
+                        onDragLeave={e => { e.currentTarget.classList.remove('border-cyan-400', 'bg-white/5'); }}
+                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('border-cyan-400', 'bg-white/5'); const f = e.dataTransfer.files[0]; if (f) handleFileChange(docKey, f); }}
+                    >
+                        <Paperclip className="w-6 h-6 text-dimWhite/50 group-hover:text-cyan-400 transition-colors" />
+                        <p className="text-sm text-dimWhite/70 font-poppins group-hover:text-white transition-colors">Click or drag &amp; drop to attach</p>
+                        <p className="text-xs text-dimWhite/40 font-poppins">{hint}</p>
+                    </div>
+                )}
+                <input
+                    ref={el => { fileInputRefs.current[docKey] = el; }}
+                    type="file"
+                    accept={accept}
+                    className="hidden"
+                    onChange={e => handleFileChange(docKey, e.target.files?.[0] ?? null)}
+                />
+            </div>
+        );
+    };
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<Partial<Application>>({
+    const [formData, setFormData] = useState<Partial<Application> & { fullName?: string }>({
         // Personal
+        fullName: user?.name || '',
         dob: '',
         gender: 'male',
         maritalStatus: 'single',
@@ -40,6 +134,12 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
         branchPreference: '',
         modeOfOperation: 'self',
         initialDeposit: 0,
+        jointHolderName: '',
+        jointHolderDob: '',
+        jointHolderPan: '',
+        jointHolderAadhaar: '',
+        jointHolderRelation: '',
+        jointHolderMobile: '',
 
         // Financial
         employment: 'Salaried',
@@ -71,7 +171,15 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
 
         switch (currentStep) {
             case 1: // Personal
-                if (!formData.dob) newErrors.dob = 'Date of Birth is required';
+                if (!formData.dob) {
+                    newErrors.dob = 'Date of Birth is required';
+                } else {
+                    const today = new Date();
+                    const dob = new Date(formData.dob);
+                    const age = today.getFullYear() - dob.getFullYear() - (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+                    if (dob > today) newErrors.dob = 'Date of Birth cannot be in the future';
+                    else if (age < 18) newErrors.dob = 'You must be at least 18 years old';
+                }
                 if (!formData.parentsName) newErrors.parentsName = "Father's/Mother's Name is required";
                 break;
             case 2: // Contact
@@ -88,6 +196,12 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
             case 4: // Account
                 if (!formData.branchPreference) newErrors.branchPreference = 'Branch Preference is required';
                 if (!formData.initialDeposit || formData.initialDeposit < 500) newErrors.initialDeposit = 'Minimum deposit of ₹500 is required';
+                if (formData.modeOfOperation === 'joint') {
+                    if (!(formData as any).jointHolderName) newErrors.jointHolderName = 'Joint holder name is required';
+                    if (!(formData as any).jointHolderRelation) newErrors.jointHolderRelation = 'Relationship is required';
+                    if (!(formData as any).jointHolderDob) newErrors.jointHolderDob = 'Joint holder date of birth is required';
+                    if (!((formData as any).jointHolderMobile) || !/^[0-9]{10}$/.test((formData as any).jointHolderMobile || '')) newErrors.jointHolderMobile = 'Valid 10-digit mobile number is required';
+                }
                 break;
             case 5: // Financial
                 if (formData.employment !== 'Student' && !formData.annualIncome) newErrors.annualIncome = 'Annual Income is required';
@@ -129,6 +243,109 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+
+    // ── Tambo integration: register fill callback via global bridge ─────────
+    useEffect(() => {
+        // Register with global bridge (used by ALL Form Fillers)
+        formFillBridge.register((data) => {
+            // Personal Details (Step 1)
+            if (data.fullName) handleChange('fullName', data.fullName);
+            if (data.dob) handleChange('dob', data.dob);
+            if (data.gender) handleChange('gender', data.gender);
+            if (data.maritalStatus) handleChange('maritalStatus', data.maritalStatus);
+            if (data.parentsName) handleChange('parentsName', data.parentsName);
+            if (data.nationality) handleChange('nationality', data.nationality);
+
+            // Contact Details (Step 2)
+            if (data.mobileNumber) handleChange('mobileNumber', data.mobileNumber);
+            if (data.email) handleChange('email', data.email);
+            if (data.currentAddress) handleChange('currentAddress', data.currentAddress);
+            if (data.permanentAddress) handleChange('permanentAddress', data.permanentAddress);
+            if (data.city) handleChange('city', data.city);
+            if (data.state) handleChange('state', data.state);
+            if (data.pincode) handleChange('pincode', data.pincode);
+            if (data.permanentAddressSame && (data.currentAddress || formData.currentAddress)) {
+                handleChange('permanentAddress', data.currentAddress || formData.currentAddress);
+            }
+
+            // KYC Details (Step 3)
+            if (data.panNumber) handleChange('panNumber', data.panNumber);
+            if (data.aadhaarNumber) handleChange('aadhaarNumber', data.aadhaarNumber);
+            if (data.passportNumber) handleChange('passportNumber', data.passportNumber);
+
+            // Account Details (Step 4)
+            if (data.accountType) handleChange('accountType', data.accountType);
+            if (data.branchPreference) handleChange('branchPreference', data.branchPreference);
+            if (data.modeOfOperation) handleChange('modeOfOperation', data.modeOfOperation);
+            if (data.initialDeposit) handleChange('initialDeposit', Number(data.initialDeposit));
+
+            // Financial Details (Step 5)
+            if (data.employment) {
+                const v = data.employment.toLowerCase();
+                let val = 'Salaried'; // default
+                if (v.includes('student')) val = 'Student';
+                else if (v.includes('self')) val = 'Self-Employed';
+                else if (v.includes('business')) val = 'Business';
+                else if (v.includes('salary') || v.includes('salaried')) val = 'Salaried';
+                handleChange('employment', val);
+            }
+            if (data.employerName) handleChange('employerName', data.employerName);
+            if (data.annualIncome) {
+                const v = data.annualIncome.toLowerCase().replace(/\s/g, '');
+                let val = '';
+                // Order matters! Check specific/larger sets first to avoid partial matches (e.g. '10' contains '1')
+                if (v.includes('>10') || v.includes('more') || v.includes('above')) val = '>10L';
+                else if (v.includes('5-10') || (v.includes('5') && v.includes('10'))) val = '5L-10L';
+                else if (v.includes('1-5') || (v.includes('1') && v.includes('5'))) val = '1L-5L';
+                else if (v.includes('<1') || v.includes('less') || v.includes('below')) val = '<1L';
+
+                if (val) handleChange('annualIncome', val);
+            }
+            if (data.sourceOfFunds) handleChange('sourceOfFunds', data.sourceOfFunds);
+            if (data.monthlyTxn) {
+                const num = parseFloat(String(data.monthlyTxn).replace(/[^0-9.]/g, ''));
+                if (!isNaN(num)) handleChange('monthlyTxn', num);
+            }
+
+            // Nominee Details (Step 6)
+            if (data.nomineeName) handleChange('nomineeName', data.nomineeName);
+            if (data.nomineeRelation) handleChange('nomineeRelation', data.nomineeRelation);
+            if (data.nomineeDob) handleChange('nomineeDob', data.nomineeDob);
+            if (data.nomineeAddress) handleChange('nomineeAddress', data.nomineeAddress);
+
+            // Services (Step 7)
+            if (data.debitCard !== undefined) handleChange('services.debitCard', data.debitCard);
+            if (data.netBanking !== undefined) handleChange('services.netBanking', data.netBanking);
+            if (data.mobileBanking !== undefined) handleChange('services.mobileBanking', data.mobileBanking);
+            if (data.chequeBook !== undefined) handleChange('services.chequeBook', data.chequeBook);
+            if (data.smsAlerts !== undefined) handleChange('services.smsAlerts', data.smsAlerts);
+        });
+
+        // Update App Context for auto-context awareness
+        const stepContexts: Record<number, { name: string; required: string[]; optional: string[]; notes?: string }> = {
+            1: { name: 'Personal Details', required: ['dob', 'parentsName'], optional: ['fullName', 'gender', 'maritalStatus', 'nationality'], notes: 'Full Name is editable. DOB must be 18+.' },
+            2: { name: 'Contact Information', required: ['mobileNumber', 'currentAddress', 'city', 'state', 'pincode'], optional: ['email', 'permanentAddress'], notes: 'Mobile number 10 digits.' },
+            3: { name: 'KYC Documents', required: ['panNumber', 'aadhaarNumber'], optional: ['passportNumber'], notes: 'PAN format: 5 letters, 4 digits, 1 letter. Aadhaar: 12 digits.' },
+            4: { name: 'Account Details', required: ['branchPreference', 'initialDeposit'], optional: ['accountType', 'modeOfOperation'], notes: 'Min deposit 500.' },
+            5: { name: 'Financial Details', required: ['employment', 'annualIncome'], optional: ['employerName', 'sourceOfFunds'], notes: 'Occupation: Student, Salaried, Self-Employed, Business. Income: 1L-5L, 5L-10L, >10L, <1L.' },
+            6: { name: 'Nominee Details', required: [], optional: ['nomineeName', 'nomineeRelation', 'nomineeDob', 'nomineeAddress'], notes: 'Nominee is completely optional.' },
+            7: { name: 'Services', required: [], optional: ['debitCard', 'netBanking', 'mobileBanking', 'chequeBook', 'smsAlerts'], notes: 'Select desired services.' },
+        };
+
+        const ctx = stepContexts[step] || { name: 'Unknown', required: [], optional: [] };
+
+        appContextBridge.update({
+            currentStep: step,
+            stepName: ctx.name,
+            requiredFields: ctx.required,
+            optionalFields: ctx.optional,
+            view: 'account-opening',
+            notes: ctx.notes
+        });
+
+        return () => formFillBridge.unregister();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [step]); // Re-register when step changes to update context
 
     const handleSubmit = () => {
         if (!validateStep(step)) return;
@@ -224,7 +441,13 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className={labelClasses}>Full Name</label>
-                                    <input type="text" value={user?.name} disabled className={`${inputClasses} opacity-50 cursor-not-allowed`} />
+                                    <input
+                                        type="text"
+                                        value={(formData as any).fullName ?? user?.name ?? ''}
+                                        onChange={e => handleChange('fullName' as keyof Application, e.target.value)}
+                                        className={inputClasses}
+                                        placeholder="Enter your full name"
+                                    />
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Date of Birth <span className="text-red-400">*</span></label>
@@ -234,6 +457,8 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                                         onChange={e => handleChange('dob', e.target.value)}
                                         className={`${inputClasses} ${errors.dob ? 'border-red-500' : ''}`}
                                         style={{ colorScheme: 'dark' }}
+                                        min="1900-01-01"
+                                        max={new Date().toISOString().split('T')[0]}
                                     />
                                     {errors.dob && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.dob}</p>}
                                 </div>
@@ -356,52 +581,52 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                     {/* Step 3: Identity & KYC Details */}
                     {step === 3 && (
                         <div className="space-y-6 animate-fadeIn">
-                            <h3 className="text-xl font-bold text-white border-b border-dimWhite/20 pb-4 font-poppins">3. Identity & KYC Details</h3>
+                            <h3 className="text-xl font-bold text-white border-b border-dimWhite/20 pb-4 font-poppins">3. Identity &amp; KYC Details</h3>
+
+                            {/* Number fields */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label className={labelClasses}>PAN Number <span className="text-red-400">*</span></label>
-                                    <div className="relative" title="Upload Document">
-                                        <input
-                                            type="text"
-                                            value={formData.panNumber}
-                                            onChange={e => handleChange('panNumber', e.target.value.toUpperCase())}
-                                            className={`${inputClasses} uppercase ${errors.panNumber ? 'border-red-500' : ''}`}
-                                            maxLength={10}
-                                            placeholder="ABCDE1234F"
-                                        />
-                                        <div className="absolute right-3 top-3 text-dimWhite/50 hover:text-cyan-400 transition-colors">
-                                            <Upload className="w-5 h-5 cursor-pointer" />
-                                        </div>
-                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.panNumber}
+                                        onChange={e => handleChange('panNumber', e.target.value.toUpperCase())}
+                                        className={`${inputClasses} uppercase ${errors.panNumber ? 'border-red-500' : ''}`}
+                                        maxLength={10}
+                                        placeholder="ABCDE1234F"
+                                    />
                                     {errors.panNumber && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.panNumber}</p>}
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Aadhaar Number <span className="text-red-400">*</span></label>
-                                    <div className="relative" title="Upload Document">
-                                        <input
-                                            type="text"
-                                            value={formData.aadhaarNumber}
-                                            onChange={e => handleChange('aadhaarNumber', e.target.value)}
-                                            className={`${inputClasses} ${errors.aadhaarNumber ? 'border-red-500' : ''}`}
-                                            maxLength={12}
-                                            placeholder="1234 5678 9012"
-                                        />
-                                        <div className="absolute right-3 top-3 text-dimWhite/50 hover:text-cyan-400 transition-colors">
-                                            <Upload className="w-5 h-5 cursor-pointer" />
-                                        </div>
-                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.aadhaarNumber}
+                                        onChange={e => handleChange('aadhaarNumber', e.target.value)}
+                                        className={`${inputClasses} ${errors.aadhaarNumber ? 'border-red-500' : ''}`}
+                                        maxLength={12}
+                                        placeholder="1234 5678 9012"
+                                    />
                                     {errors.aadhaarNumber && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.aadhaarNumber}</p>}
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Passport Number (Optional)</label>
-                                    <input type="text" value={formData.passportNumber} onChange={e => handleChange('passportNumber', e.target.value)} className={inputClasses} />
+                                    <input type="text" value={formData.passportNumber} onChange={e => handleChange('passportNumber', e.target.value)} className={inputClasses} placeholder="A1234567" />
                                 </div>
-                                <div>
-                                    <label className={labelClasses}>Upload Photograph</label>
-                                    <div className="border border-dashed border-dimWhite/30 rounded-lg p-4 text-center cursor-pointer hover:bg-white/5 hover:border-cyan-400 transition-all flex flex-col items-center justify-center h-[100px] bg-dimBlue/5">
-                                        <Upload className="w-6 h-6 text-dimWhite mb-2" />
-                                        <span className="text-sm text-dimWhite/70 font-poppins">Click to upload photo</span>
-                                    </div>
+                            </div>
+
+                            {/* Document Attachments */}
+                            <div className="pt-2">
+                                <p className="text-sm font-semibold text-white font-poppins mb-4 flex items-center gap-2">
+                                    <Paperclip className="w-4 h-4 text-cyan-400" />
+                                    Document Attachments
+                                    <span className="text-xs text-dimWhite/50 font-normal">(JPG, PNG or PDF · Max 5MB each)</span>
+                                </p>
+                                <div className="grid md:grid-cols-2 gap-5">
+                                    <FileUploadBox docKey="pan" label="PAN Card Copy" />
+                                    <FileUploadBox docKey="aadhaar" label="Aadhaar Card Copy" />
+                                    <FileUploadBox docKey="passport" label="Passport Copy (Optional)" hint="JPG, PNG or PDF · Max 5MB" />
+                                    <FileUploadBox docKey="photo" label="Photograph" accept="image/*" hint="JPG or PNG · Max 5MB" />
                                 </div>
                             </div>
                         </div>
@@ -458,6 +683,94 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                                     {errors.initialDeposit && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.initialDeposit}</p>}
                                 </div>
                             </div>
+
+                            {/* Joint Account Holder Details */}
+                            {formData.modeOfOperation === 'joint' && (
+                                <div className="mt-2 border border-cyan-400/30 rounded-xl p-5 bg-cyan-400/5 space-y-5 animate-fadeIn">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
+                                        <h4 className="text-sm font-semibold text-cyan-400 font-poppins tracking-wide uppercase">Joint Account Holder Details</h4>
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label className={labelClasses}>Full Name <span className="text-red-400">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={(formData as any).jointHolderName || ''}
+                                                onChange={e => handleChange('jointHolderName', e.target.value)}
+                                                className={`${inputClasses} ${errors.jointHolderName ? 'border-red-500' : ''}`}
+                                                placeholder="Joint holder's full name"
+                                            />
+                                            {errors.jointHolderName && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.jointHolderName}</p>}
+                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>Relationship <span className="text-red-400">*</span></label>
+                                            <select
+                                                value={(formData as any).jointHolderRelation || ''}
+                                                onChange={e => handleChange('jointHolderRelation', e.target.value)}
+                                                className={`${selectClasses} ${errors.jointHolderRelation ? 'border-red-500' : ''}`}
+                                            >
+                                                <option value="" className="bg-primary text-white">Select Relationship</option>
+                                                <option value="Spouse" className="bg-primary text-white">Spouse</option>
+                                                <option value="Parent" className="bg-primary text-white">Parent</option>
+                                                <option value="Sibling" className="bg-primary text-white">Sibling</option>
+                                                <option value="Child" className="bg-primary text-white">Child</option>
+                                                <option value="Business Partner" className="bg-primary text-white">Business Partner</option>
+                                                <option value="Other" className="bg-primary text-white">Other</option>
+                                            </select>
+                                            {errors.jointHolderRelation && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.jointHolderRelation}</p>}
+                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>Date of Birth <span className="text-red-400">*</span></label>
+                                            <input
+                                                type="date"
+                                                value={(formData as any).jointHolderDob || ''}
+                                                onChange={e => handleChange('jointHolderDob', e.target.value)}
+                                                className={`${inputClasses} ${errors.jointHolderDob ? 'border-red-500' : ''}`}
+                                                style={{ colorScheme: 'dark' }}
+                                                min="1900-01-01"
+                                                max={new Date().toISOString().split('T')[0]}
+                                            />
+                                            {errors.jointHolderDob && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.jointHolderDob}</p>}
+                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>Mobile Number <span className="text-red-400">*</span></label>
+                                            <input
+                                                type="tel"
+                                                value={(formData as any).jointHolderMobile || ''}
+                                                onChange={e => handleChange('jointHolderMobile', e.target.value)}
+                                                className={`${inputClasses} ${errors.jointHolderMobile ? 'border-red-500' : ''}`}
+                                                maxLength={10}
+                                                placeholder="9876543210"
+                                            />
+                                            {errors.jointHolderMobile && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.jointHolderMobile}</p>}
+                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>PAN Number</label>
+                                            <input
+                                                type="text"
+                                                value={(formData as any).jointHolderPan || ''}
+                                                onChange={e => handleChange('jointHolderPan', e.target.value.toUpperCase())}
+                                                className={`${inputClasses} uppercase`}
+                                                maxLength={10}
+                                                placeholder="ABCDE1234F"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>Aadhaar Number</label>
+                                            <input
+                                                type="text"
+                                                value={(formData as any).jointHolderAadhaar || ''}
+                                                onChange={e => handleChange('jointHolderAadhaar', e.target.value)}
+                                                className={inputClasses}
+                                                maxLength={12}
+                                                placeholder="1234 5678 9012"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-dimWhite/50 font-poppins pt-1">* The joint holder must visit the branch with original KYC documents for verification.</p>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -531,7 +844,7 @@ export default function AccountOpeningForm({ onSuccess }: AccountOpeningFormProp
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Nominee DOB</label>
-                                    <input type="date" value={formData.nomineeDob} onChange={e => handleChange('nomineeDob', e.target.value)} className={inputClasses} style={{ colorScheme: 'dark' }} />
+                                    <input type="date" value={formData.nomineeDob} onChange={e => handleChange('nomineeDob', e.target.value)} className={inputClasses} style={{ colorScheme: 'dark' }} min="1900-01-01" max={new Date().toISOString().split('T')[0]} />
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className={labelClasses}>Nominee Address</label>
