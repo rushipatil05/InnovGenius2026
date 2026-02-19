@@ -1,110 +1,104 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, FileText, BadgeDollarSign, Landmark, ShieldCheck, PieChart, ArrowRight, TrendingUp, Shield, Smartphone } from 'lucide-react';
 import styles from '../../styles';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ServicesHubProps {
     onServiceSelect: (service: string) => void;
 }
 
-const carouselContent = [
-    {
-        id: 1,
-        title: "Welcome to InnovGenius",
-        description: "Experience the next generation of banking. Managing your finances has never been easier.",
-        icon: <Landmark className="w-16 h-16 text-secondary mb-4" />,
-        bgClass: "bg-black-gradient"
-    },
-    {
-        id: 2,
-        title: "Smart Investments",
-        description: "Grow your wealth with our AI-driven investment insights. Returns up to 12% p.a.",
-        icon: <TrendingUp className="w-16 h-16 text-green-400 mb-4" />,
-        bgClass: "bg-black-gradient-2"
-    },
-    {
-        id: 3,
-        title: "Bank Securely",
-        description: "Your security is our priority. Enhanced with 256-bit encryption and biometric verification.",
-        icon: <Shield className="w-16 h-16 text-blue-400 mb-4" />,
-        bgClass: "bg-black-gradient-2"
-    },
-    {
-        id: 4,
-        title: "Mobile First",
-        description: "Bank on the go with our award-winning mobile app. Available on iOS and Android.",
-        icon: <Smartphone className="w-16 h-16 text-yellow-300 mb-4" />,
-        bgClass: "bg-black-gradient-2"
-    }
-];
-
 export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
+    const { t } = useLanguage();
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const carouselContent = [
+        {
+            id: 1,
+            title: t('carouselTitle1'),
+            description: t('carouselDesc1'),
+            icon: <Landmark className="w-16 h-16 text-secondary mb-4" />,
+            bgClass: "bg-black-gradient"
+        },
+        {
+            id: 2,
+            title: t('carouselTitle2'),
+            description: t('carouselDesc2'),
+            icon: <TrendingUp className="w-16 h-16 text-green-400 mb-4" />,
+            bgClass: "bg-black-gradient-2"
+        },
+        {
+            id: 3,
+            title: t('carouselTitle3'),
+            description: t('carouselDesc3'),
+            icon: <Shield className="w-16 h-16 text-blue-400 mb-4" />,
+            bgClass: "bg-black-gradient-2"
+        },
+        {
+            id: 4,
+            title: t('carouselTitle4'),
+            description: t('carouselDesc4'),
+            icon: <Smartphone className="w-16 h-16 text-yellow-300 mb-4" />,
+            bgClass: "bg-black-gradient-2"
+        }
+    ];
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % carouselContent.length);
         }, 3000);
         return () => clearInterval(timer);
-    }, []);
+    }, [carouselContent.length]);
 
-    const services: {
-        id: string;
-        title: string;
-        description: string;
-        icon: JSX.Element;
-        active: boolean;
-        action?: () => void;
-        tag?: string;
-    }[] = [
-            {
-                id: 'account-opening',
-                title: 'Account Opening',
-                description: 'Open a new savings or current account digitally.',
-                icon: <FileText className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('account'),
-            },
-            {
-                id: 'loans',
-                title: 'Loans',
-                description: 'Personal, home, and vehicle loans.',
-                icon: <BadgeDollarSign className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('loans'),
-            },
-            {
-                id: 'credit-cards',
-                title: 'Cards',
-                description: 'Apply for premium credit cards.',
-                icon: <CreditCard className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('credit-cards'),
-            },
-            {
-                id: 'invest',
-                title: 'Invest',
-                description: 'Mutual funds, FDs, and stocks.',
-                icon: <PieChart className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('invest'),
-            },
-            {
-                id: 'insurance',
-                title: 'Insurance',
-                description: 'Life and health insurance plans.',
-                icon: <ShieldCheck className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('insurance'),
-            },
-            {
-                id: 'tax-services',
-                title: 'Tax',
-                description: 'Easy tax filing services.',
-                icon: <Landmark className="w-8 h-8 text-secondary" />,
-                active: true,
-                action: () => onServiceSelect('tax'),
-            }
-        ];
+    const services = [
+        {
+            id: 'account-opening',
+            title: t('svcAccountOpening'),
+            description: t('svcAccountDesc'),
+            icon: <FileText className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('account'),
+        },
+        {
+            id: 'loans',
+            title: t('svcLoans'),
+            description: t('svcLoansDesc'),
+            icon: <BadgeDollarSign className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('loans'),
+        },
+        {
+            id: 'credit-cards',
+            title: t('svcCards'),
+            description: t('svcCardsDesc'),
+            icon: <CreditCard className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('credit-cards'),
+        },
+        {
+            id: 'invest',
+            title: t('svcInvest'),
+            description: t('svcInvestDesc'),
+            icon: <PieChart className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('invest'),
+        },
+        {
+            id: 'insurance',
+            title: t('svcInsurance'),
+            description: t('svcInsuranceDesc'),
+            icon: <ShieldCheck className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('insurance'),
+        },
+        {
+            id: 'tax-services',
+            title: t('svcTax'),
+            description: t('svcTaxDesc'),
+            icon: <Landmark className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('tax'),
+        }
+    ];
 
     const currentSlide = carouselContent[currentIndex];
 
@@ -146,7 +140,7 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
 
             <div className="md:w-1/2 w-full flex flex-col">
                 <h2 className="font-poppins font-semibold text-[24px] text-white mb-6 flex items-center">
-                    Our Services <div className="h-[1px] bg-dimWhite/20 flex-1 ml-6"></div>
+                    {t('ourServices')} <div className="h-[1px] bg-dimWhite/20 flex-1 ml-6"></div>
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
@@ -164,11 +158,6 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
                                 <div className="w-10 h-10 rounded-full flex justify-center items-center bg-white/10 group-hover:bg-white/20 transition-colors">
                                     {service.icon}
                                 </div>
-                                {!service.active && (
-                                    <span className="text-[10px] bg-primary border border-dimWhite/10 text-dimWhite px-2 py-0.5 rounded-full">
-                                        {service.tag}
-                                    </span>
-                                )}
                             </div>
 
                             <h3 className="font-poppins font-semibold text-[16px] text-white mb-1 group-hover:text-secondary transition-colors">
@@ -180,7 +169,7 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
 
                             {service.active && (
                                 <div className="mt-3 flex items-center text-secondary text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                                    Access Now <ArrowRight className="w-3 h-3 ml-1" />
+                                    {t('accessNow')} <ArrowRight className="w-3 h-3 ml-1" />
                                 </div>
                             )}
                         </div>

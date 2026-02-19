@@ -1,21 +1,15 @@
 import { useEffect } from 'react';
 import { CheckCircle, User, Calendar, Heart, Users, Globe } from 'lucide-react';
 import { formFillBridge } from '../../lib/formFillBridge';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export interface PersonalDetailsFillerProps {
-    /** Full name of the applicant */
     fullName?: string;
-    /** Date of birth in YYYY-MM-DD format */
     dob?: string;
-    /** Gender: male | female | other */
     gender?: 'male' | 'female' | 'other';
-    /** Marital status: single | married | divorced | widowed */
     maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
-    /** Father's or Mother's full name */
     parentsName?: string;
-    /** Nationality, defaults to Indian */
     nationality?: string;
-    /** Optional direct callback (used when rendered outside Tambo) */
     onApply?: (data: {
         fullName?: string;
         dob?: string;
@@ -32,31 +26,51 @@ export default function PersonalDetailsFormFiller({
     gender,
     maritalStatus,
     parentsName,
-    nationality = 'Indian',
+    nationality = 'indian',
     onApply,
 }: PersonalDetailsFillerProps) {
+    const { t } = useLanguage();
 
-    // Auto-fill the form as soon as Tambo renders this component.
-    // Uses the global bridge so it works even when Tambo renders the
-    // component directly (without prop injection).
     useEffect(() => {
         const data = { fullName, dob, gender, maritalStatus, parentsName, nationality };
-        // Try direct callback first (legacy path), then bridge
-        if (onApply) {
-            onApply(data);
-        } else {
-            formFillBridge.fill(data);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        onApply ? onApply(data) : formFillBridge.fill(data);
     }, [fullName, dob, gender, maritalStatus, parentsName, nationality, onApply]);
 
+
     const fields = [
-        { icon: <User className="w-4 h-4" />, label: 'Full Name', value: fullName || '—' },
-        { icon: <Calendar className="w-4 h-4" />, label: 'Date of Birth', value: dob || '—' },
-        { icon: <Users className="w-4 h-4" />, label: 'Gender', value: gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : '—' },
-        { icon: <Heart className="w-4 h-4" />, label: 'Marital Status', value: maritalStatus ? maritalStatus.charAt(0).toUpperCase() + maritalStatus.slice(1) : '—' },
-        { icon: <User className="w-4 h-4" />, label: "Father's / Mother's Name", value: parentsName || '—' },
-        { icon: <Globe className="w-4 h-4" />, label: 'Nationality', value: nationality },
+        {
+            icon: <User className="w-4 h-4" />,
+            label: t('labelFullName'),
+            value: fullName || '—'
+        },
+        {
+            icon: <Calendar className="w-4 h-4" />,
+            label: t('labelDOB'),
+            value: dob || '—'
+        },
+        {
+            icon: <Users className="w-4 h-4" />,
+            label: t('labelGender'),
+            // FIX: Convert prop to lowercase to match the translation key
+            value: gender ? t(gender.toLowerCase()) : '—'
+        },
+        {
+            icon: <Heart className="w-4 h-4" />,
+            label: t('labelMaritalStatus'),
+            // FIX: Convert prop to lowercase to match the translation key
+            value: maritalStatus ? t(maritalStatus.toLowerCase()) : '—'
+        },
+        {
+            icon: <User className="w-4 h-4" />,
+            label: t('labelParentsName'),
+            value: parentsName || '—'
+        },
+        {
+            icon: <Globe className="w-4 h-4" />,
+            label: t('labelNationality'),
+            // FIX: Convert prop to lowercase to match the translation key
+            value: nationality ? t(nationality.toLowerCase()) : '—'
+        },
     ];
 
     return (
@@ -64,20 +78,20 @@ export default function PersonalDetailsFormFiller({
             <div className="flex items-center gap-2 mb-1">
                 <CheckCircle className="w-4 h-4 text-cyan-400" />
                 <span className="text-sm font-semibold text-cyan-400 font-poppins">
-                    Personal Details — Auto-filled ✨
+                    {t('personalDetailsAutoFilled')}
                 </span>
             </div>
             <div className="grid grid-cols-1 gap-2">
                 {fields.map((f, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
                         <span className="text-cyan-400/70 mt-0.5 shrink-0">{f.icon}</span>
-                        <span className="text-gray-400 font-poppins w-36 shrink-0">{f.label}:</span>
+                        <span className="text-gray-400 font-poppins w-40 shrink-0">{f.label}:</span>
                         <span className="text-white font-poppins font-medium">{f.value}</span>
                     </div>
                 ))}
             </div>
             <p className="text-xs text-green-400 font-poppins pt-1 font-medium">
-                ✅ Form fields updated! Review and click <strong>Next</strong> to continue.
+                ✅ {t('formUpdatedReview').replace('Next', t('next'))}
             </p>
         </div>
     );

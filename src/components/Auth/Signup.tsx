@@ -4,8 +4,10 @@ import { UserRole } from '../../types';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from '../../styles';
 import { logo } from '../assets';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Signup() {
+  const { t } = useLanguage();
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -19,12 +21,12 @@ export default function Signup() {
     setError('');
 
     if (!name || !email || !password || !role) {
-      setError('Please fill in all fields');
+      setError(t('fillFields'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('passwordLength'));
       return;
     }
 
@@ -32,7 +34,7 @@ export default function Signup() {
     if (success) {
       navigate('/dashboard');
     } else {
-      setError('Email already exists');
+      setError(t('emailExists'));
     }
   };
 
@@ -53,13 +55,13 @@ export default function Signup() {
           </Link>
 
           <h1 className={`${styles.heading2} mb-6`}>
-            Join the <br />
-            <span className="text-gradient">Future</span> of <br />
-            Banking Today.
+            {t('joinFuture')} <br />
+            <span className="text-gradient">{t('future')}</span> <br />
+            {t('ofBanking')}
           </h1>
 
           <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-            Create your account to start managing your finances smarter, faster, and more securely.
+            {t('createAccountDesc')}
           </p>
         </div>
       </div>
@@ -70,10 +72,10 @@ export default function Signup() {
 
         <div className="w-full max-w-md bg-black-gradient-2 p-8 rounded-2xl shadow-2xl border border-dimWhite/10 backdrop-blur-sm">
           <h2 className={styles.heading2 + " text-center text-[32px] mb-2"}>
-            Create Account
+            {t('createAccount')}
           </h2>
           <p className={`${styles.paragraph} text-center text-[16px] mb-8`}>
-            Join our banking platform
+            {t('joinPlatform')}
           </p>
 
           {error && (
@@ -85,7 +87,7 @@ export default function Signup() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Full Name
+                {t('fullName')}
               </label>
               <input
                 type="text"
@@ -98,7 +100,7 @@ export default function Signup() {
 
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Email Address
+                {t('email')}
               </label>
               <input
                 type="email"
@@ -111,7 +113,7 @@ export default function Signup() {
 
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Password
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -124,7 +126,7 @@ export default function Signup() {
 
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Select Role
+                {t('selectRole')}
               </label>
               <div className="relative">
                 <select
@@ -132,9 +134,9 @@ export default function Signup() {
                   onChange={(e) => setRole(e.target.value as UserRole)}
                   className="w-full px-4 py-3 bg-dimBlue/10 border border-dimWhite/20 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition text-white appearance-none cursor-pointer"
                 >
-                  <option value="user" className="bg-primary text-white">User (Apply for Services)</option>
-                  <option value="officer" className="bg-primary text-white">Officer (Review Applications)</option>
-                  <option value="auditor" className="bg-primary text-white">Auditor (View Logs)</option>
+                  <option value="user" className="bg-primary text-white">{t('roleUser')}</option>
+                  <option value="officer" className="bg-primary text-white">{t('roleOfficer')}</option>
+                  <option value="auditor" className="bg-primary text-white">{t('roleAuditor')}</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                   <svg className="w-4 h-4 text-dimWhite" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -146,17 +148,17 @@ export default function Signup() {
               type="submit"
               className={`w-full bg-blue-gradient text-primary font-poppins font-semibold py-4 rounded-[10px] outline-none hover:shadow-lg transition-all duration-300 mt-4`}
             >
-              Create Account
+              {t('createAccount')}
             </button>
           </form>
 
           <p className="mt-8 text-center text-dimWhite text-sm font-poppins">
-            Already have an account?{' '}
+            {t('alreadyHaveAccount')}{' '}
             <Link
               to="/login"
               className="text-cyan-400 font-semibold hover:text-white transition-colors"
             >
-              Sign In
+              {t('signIn')}
             </Link>
           </p>
         </div>
