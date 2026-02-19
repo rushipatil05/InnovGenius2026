@@ -1,0 +1,20 @@
+{
+    "name": "InnovGenius Bank AI",
+    "short_name": "InnovGenius",
+    "description": "AI-Powered Banking Risk & Compliance Platform with Voice Assistance",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#111827",
+    "theme_color": "#3b82f6",
+    "icons": [
+        {
+            "src": "/vite.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        }
+    ],
+    "permissions": [
+        "microphone",
+        "speech-recognition"
+    ]
+}
