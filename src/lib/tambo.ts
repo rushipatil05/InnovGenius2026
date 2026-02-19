@@ -161,4 +161,24 @@ export const tamboTools = [
             notes: z.string(),
         }),
     },
+    {
+        name: 'navigate-form-step',
+        description:
+            'Navigates between form steps. Use "next" to proceed after filling a form, "back" to review, or "goto" to jump to a specific step.',
+        tool: (args: { direction: 'next' | 'back' | 'goto'; step?: number }) => {
+            appContextBridge.navigate(args.direction, args.step);
+            return {
+                message: `Navigated ${args.direction}${args.step ? ` to step ${args.step}` : ''}`,
+                success: true
+            };
+        },
+        inputSchema: z.object({
+            direction: z.enum(['next', 'back', 'goto']),
+            step: z.number().optional().describe('Only required for "goto" direction'),
+        }),
+        outputSchema: z.object({
+            message: z.string(),
+            success: z.boolean(),
+        }),
+    }
 ];

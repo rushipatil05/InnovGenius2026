@@ -26,5 +26,20 @@ export const appContextBridge = {
     },
     get() {
         return _context;
+    },
+
+    // Navigation support
+    _navHandler: null as ((action: 'next' | 'back' | 'goto', step?: number) => void) | null,
+
+    registerNavigation(handler: (action: 'next' | 'back' | 'goto', step?: number) => void) {
+        this._navHandler = handler;
+    },
+
+    navigate(action: 'next' | 'back' | 'goto', step?: number) {
+        if (this._navHandler) {
+            this._navHandler(action, step);
+            return true;
+        }
+        return false;
     }
 };

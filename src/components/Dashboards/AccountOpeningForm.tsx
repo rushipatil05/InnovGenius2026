@@ -243,8 +243,24 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+    // ── Navigate Bridge: Expose navigation to Tambo ─────────────────────────
+    const navigationRef = useRef({ handleNext, handleBack, setStep });
+    // Update ref on every render to ensure latest state/props are used
+    navigationRef.current = { handleNext, handleBack, setStep };
 
-    // ── Tambo integration: register fill callback via global bridge ─────────
+    useEffect(() => {
+        appContextBridge.registerNavigation((action, targetStep) => {
+            if (action === 'next') {
+                navigationRef.current.handleNext();
+            } else if (action === 'back') {
+                navigationRef.current.handleBack();
+            } else if (action === 'goto' && typeof targetStep === 'number') {
+                navigationRef.current.setStep(targetStep);
+            }
+        });
+    }, []); // Register once on mount
+
+
     useEffect(() => {
         // Register with global bridge (used by ALL Form Fillers)
         formFillBridge.register((data) => {
