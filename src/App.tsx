@@ -14,7 +14,6 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 
 const TAMBO_API_KEY = import.meta.env.VITE_TAMBO_API_KEY as string;
 
-const TAMBO_API_KEY = import.meta.env.VITE_TAMBO_API_KEY as string;
 
 function DashboardRouter() {
   const { user } = useAuth();
