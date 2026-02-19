@@ -67,10 +67,10 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
         {
             id: 'credit-cards',
             title: 'Cards',
-            description: 'Credit cards with exclusive rewards.',
-            icon: <CreditCard className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
+            description: 'Apply for premium credit cards.',
+            icon: <CreditCard className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('credit-cards'),
         },
         {
             id: 'investments',

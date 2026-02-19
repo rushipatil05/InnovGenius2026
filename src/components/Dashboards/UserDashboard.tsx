@@ -6,8 +6,9 @@ import AccountServices from './AccountServices';
 import styles from '../../styles';
 import OnboardingAssistant from './OnboardingAssistant';
 import { navBridge } from '../../lib/navBridge';
+import CreditCardApplication from '../CreditCards/CreditCardApplication';
 
-type DashboardView = 'home' | 'account-opening';
+type DashboardView = 'home' | 'account-opening' | 'credit-cards';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
@@ -31,6 +32,8 @@ export default function UserDashboard() {
   const handleServiceSelect = (service: string) => {
     if (service === 'account') {
       setCurrentView('account-opening');
+    } else if (service === 'credit-cards') {
+      setCurrentView('credit-cards');
     }
   };
 
@@ -69,6 +72,12 @@ export default function UserDashboard() {
 
           {currentView === 'account-opening' && (
             <AccountServices
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'credit-cards' && (
+            <CreditCardApplication
               onBack={() => setCurrentView('home')}
             />
           )}
