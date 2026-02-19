@@ -47,56 +47,64 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
         return () => clearInterval(timer);
     }, []);
 
-    const services = [
-        {
-            id: 'account-opening',
-            title: 'Account Opening',
-            description: 'Open a new savings or current account digitally.',
-            icon: <FileText className="w-8 h-8 text-secondary" />,
-            active: true,
-            action: () => onServiceSelect('account'),
-        },
-        {
-            id: 'loans',
-            title: 'Loans',
-            description: 'Personal, home, and vehicle loans.',
-            icon: <BadgeDollarSign className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
-        },
-        {
-            id: 'credit-cards',
-            title: 'Cards',
-            description: 'Credit cards with exclusive rewards.',
-            icon: <CreditCard className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
-        },
-        {
-            id: 'investments',
-            title: 'Invest',
-            description: 'Mutual funds, FDs, and stocks.',
-            icon: <PieChart className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
-        },
-        {
-            id: 'insurance',
-            title: 'Insurance',
-            description: 'Life and health insurance plans.',
-            icon: <ShieldCheck className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
-        },
-        {
-            id: 'tax-services',
-            title: 'Tax',
-            description: 'Easy tax filing services.',
-            icon: <Landmark className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
-        }
-    ];
+    const services: {
+        id: string;
+        title: string;
+        description: string;
+        icon: JSX.Element;
+        active: boolean;
+        action?: () => void;
+        tag?: string;
+    }[] = [
+            {
+                id: 'account-opening',
+                title: 'Account Opening',
+                description: 'Open a new savings or current account digitally.',
+                icon: <FileText className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('account'),
+            },
+            {
+                id: 'loans',
+                title: 'Loans',
+                description: 'Personal, home, and vehicle loans.',
+                icon: <BadgeDollarSign className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('loans'),
+            },
+            {
+                id: 'credit-cards',
+                title: 'Cards',
+                description: 'Apply for premium credit cards.',
+                icon: <CreditCard className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('credit-cards'),
+            },
+            {
+                id: 'invest',
+                title: 'Invest',
+                description: 'Mutual funds, FDs, and stocks.',
+                icon: <PieChart className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('invest'),
+            },
+            {
+                id: 'insurance',
+                title: 'Insurance',
+                description: 'Life and health insurance plans.',
+                icon: <ShieldCheck className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('insurance'),
+            },
+            {
+                id: 'tax-services',
+                title: 'Tax',
+                description: 'Easy tax filing services.',
+                icon: <Landmark className="w-8 h-8 text-secondary" />,
+                active: true,
+                action: () => onServiceSelect('tax'),
+            }
+        ];
 
     const currentSlide = carouselContent[currentIndex];
 

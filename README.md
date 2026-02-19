@@ -25,6 +25,7 @@ From identity verification to final approval, Aurora transforms traditional onbo
 - **MongoDB** – NoSQL database (Mongoose ODM)
 
 ## 🧠 Core Intelligence
+- **Tambo AI Engine** – Conversational Form Filling & Navigation
 - Custom Rule-Based Risk Engine
 - Explainable Risk Categorization
 - Officer Escalation Logic
@@ -42,20 +43,18 @@ Aurora is built around four intelligent modules:
 
 ---
 
-## 💬 1. Conversational Onboarding Engine
+## 🤖 1. Tambo AI – Intelligent Onboarding Assistant
 
-Aurora replaces traditional static forms with an intelligent, guided onboarding flow.
+**Tambo** is the heart of Aurora—a context-aware AI agent that turns tedious forms into a natural conversation.
 
-### Features:
-- Mobile number OTP verification
-- PAN validation
-- Aadhaar validation
-- Employment & income collection
-- Real-time field validation
-- Adaptive follow-up questions
+### 🚀 Key Capabilities:
+- **Zero-UI Form Filling**: Users simply speak or type (e.g., *"My name is Rahul, born 1998"*), and Tambo auto-populates fields across multiple steps.
+- **Contextual Intelligence**: Goes beyond dictation. It maps vague inputs like *"I earn 5 LPA"* to precise banking categories (*"Annual Income: 5L-10L"*).
+- **Smart Navigation**: instantly jumps between steps based on user intent (*"Skip to Nominee details"*).
+- **Dynamic Correction**: Handles complex state changes (*"Select all services except Cheque Book"*) in real-time.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5312e71c-534e-42e7-8de2-e90ae26f29f6" width="85%" alt="Conversational Onboarding Screenshot" />
+  <img src="https://github.com/user-attachments/assets/5312e71c-534e-42e7-8de2-e90ae26f29f6" width="85%" alt="Tambo AI Interface" />
 </p>
 
 ---

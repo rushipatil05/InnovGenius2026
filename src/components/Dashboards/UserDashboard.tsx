@@ -6,8 +6,13 @@ import AccountServices from './AccountServices';
 import styles from '../../styles';
 import OnboardingAssistant from './OnboardingAssistant';
 import { navBridge } from '../../lib/navBridge';
+import CreditCardApplication from '../CreditCards/CreditCardApplication';
+import InsuranceApplication from '../Insurance/InsuranceApplication';
+import LoanApplication from '../Loans/LoanApplication';
+import InvestmentApplication from '../Investments/InvestmentApplication';
+import TaxApplication from '../Tax/TaxApplication';
 
-type DashboardView = 'home' | 'account-opening';
+type DashboardView = 'home' | 'account-opening' | 'credit-cards' | 'insurance' | 'loans' | 'invest' | 'tax';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
@@ -31,6 +36,16 @@ export default function UserDashboard() {
   const handleServiceSelect = (service: string) => {
     if (service === 'account') {
       setCurrentView('account-opening');
+    } else if (service === 'credit-cards') {
+      setCurrentView('credit-cards');
+    } else if (service === 'insurance') {
+      setCurrentView('insurance');
+    } else if (service === 'loans') {
+      setCurrentView('loans');
+    } else if (service === 'invest') {
+      setCurrentView('invest');
+    } else if (service === 'tax') {
+      setCurrentView('tax');
     }
   };
 
@@ -69,6 +84,36 @@ export default function UserDashboard() {
 
           {currentView === 'account-opening' && (
             <AccountServices
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'credit-cards' && (
+            <CreditCardApplication
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'insurance' && (
+            <InsuranceApplication
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'loans' && (
+            <LoanApplication
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'invest' && (
+            <InvestmentApplication
+              onBack={() => setCurrentView('home')}
+            />
+          )}
+
+          {currentView === 'tax' && (
+            <TaxApplication
               onBack={() => setCurrentView('home')}
             />
           )}
