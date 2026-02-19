@@ -84,9 +84,9 @@ export default function ServicesHub({ onServiceSelect }: ServicesHubProps) {
             id: 'insurance',
             title: 'Insurance',
             description: 'Life and health insurance plans.',
-            icon: <ShieldCheck className="w-8 h-8 text-dimWhite" />,
-            active: false,
-            tag: 'Soon'
+            icon: <ShieldCheck className="w-8 h-8 text-secondary" />,
+            active: true,
+            action: () => onServiceSelect('insurance'),
         },
         {
             id: 'tax-services',
