@@ -17,7 +17,7 @@ export const allowedLocations: AllowedLocation[] = [
         latitude: 19.0760,
         longitude: 72.8777,
         radius: 50000000, // Large radius for testing to ensure it works almost anywhere
-        address: 'InnovGenius HQ, Bandra Kurla Complex',
+        address: 'InnovGenius HQ, Thakur College of Engineering and Technology',
         city: 'Mumbai',
         state: 'Maharashtra',
         pincode: '400051'
