@@ -27,7 +27,7 @@ export default function Login() {
     setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError(t('fillFields'));
       return;
     }
 
@@ -35,7 +35,7 @@ export default function Login() {
     if (success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid email or password');
+      setError(t('invalidCredentials'));
     }
   };
 
@@ -56,14 +56,13 @@ export default function Login() {
           </Link>
 
           <h1 className={`${styles.heading2} mb-6`}>
-            The Next <br />
-            <span className="text-gradient">Generation</span> <br />
-            Payment Method.
+            {t('heroTitle1')} <br />
+            <span className="text-gradient">{t('heroTitle2')}</span> <br />
+            {t('heroTitle3')}
           </h1>
 
           <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-            Manage your finances with our secure, cutting-edge banking platform.
-            Access your accounts, transfer funds, and track your spending with ease.
+            {t('heroDesc')}
           </p>
         </div>
       </div>
@@ -77,7 +76,7 @@ export default function Login() {
             {t("signIn")}
           </h2>
           <p className={`${styles.paragraph} text-center text-[16px] mb-8`}>
-            Access your secure account
+            {t('accessAccount')}
           </p>
 
           {error && (
@@ -89,7 +88,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Email Address
+                {t('email')}
               </label>
               <input
                 type="email"
@@ -102,7 +101,7 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-dimWhite mb-2">
-                Password
+                {t('password')}
               </label>
               <input
                 type="password"
@@ -117,17 +116,17 @@ export default function Login() {
               type="submit"
               className={`w-full bg-blue-gradient text-primary font-poppins font-semibold py-4 rounded-[10px] outline-none hover:shadow-lg transition-all duration-300 mt-4`}
             >
-              Sign In
+              {t('signIn')}
             </button>
           </form>
 
           <p className="mt-8 text-center text-dimWhite text-sm font-poppins">
-            Don't have an account?{' '}
+            {t('dontHaveAccount')}{' '}
             <Link
               to="/signup"
               className="text-cyan-400 font-semibold hover:text-white transition-colors"
             >
-              Sign Up
+              {t('signUp')}
             </Link>
           </p>
         </div>
