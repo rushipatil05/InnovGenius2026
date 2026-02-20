@@ -59,6 +59,11 @@ export interface Application {
   annualIncome: string;
   sourceOfFunds: string;
   monthlyTxn: number; // kept for compatibility
+  isLocationVerified?: boolean;
+  locationCoordinates?: {
+    lat: number;
+    lng: number;
+  };
 
   // 6. Nominee Details (Optional)
   nomineeName?: string;

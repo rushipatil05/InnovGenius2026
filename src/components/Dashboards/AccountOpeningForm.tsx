@@ -3,9 +3,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
 import { calculateRisk } from '../../utils/riskEngine';
 import { Application } from '../../types';
-import { ChevronRight, ChevronLeft, Save, CheckCircle, FileX2, FileCheck2, Paperclip } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Save, CheckCircle, FileX2, FileCheck2, Paperclip, MapPin, Loader2 } from 'lucide-react';
 import { formFillBridge } from '../../lib/formFillBridge';
 import { appContextBridge } from '../../lib/appContextBridge';
+import { findNearestAllowedLocation } from '../../data/allowedLocations';
 
 
 interface AccountOpeningFormProps {
@@ -165,6 +166,55 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+    const [locationVerified, setLocationVerified] = useState(false);
+    const [locationMessage, setLocationMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [locationCoords, setLocationCoords] = useState<{ lat: number, lng: number } | null>(null);
+
+    const handleVerifyLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationMessage({ type: 'error', text: 'Geolocation is not supported by your browser' });
+            return;
+        }
+
+        setIsCheckingLocation(true);
+        setLocationMessage(null);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const location = findNearestAllowedLocation(latitude, longitude);
+
+                if (location) {
+                    setFormData(prev => ({
+                        ...prev,
+                        currentAddress: location.address,
+                        city: location.city,
+                        state: location.state,
+                        pincode: location.pincode,
+                    }));
+                    setLocationVerified(true);
+                    setLocationCoords({ lat: latitude, lng: longitude });
+                    setLocationMessage({ type: 'success', text: `Verified: ${location.name}` });
+                    setErrors(prev => ({ ...prev, currentAddress: '', city: '', state: '', pincode: '' }));
+                } else {
+                    setLocationVerified(false);
+                    setLocationMessage({ type: 'error', text: 'You are not within a verifiable service location range.' });
+                }
+                setIsCheckingLocation(false);
+            },
+            (error) => {
+                console.error(error);
+                let errorText = 'Unable to retrieve your location.';
+                if (error.code === error.PERMISSION_DENIED) errorText = 'Location permission denied. Please enable it.';
+                else if (error.code === error.POSITION_UNAVAILABLE) errorText = 'Location information is unavailable.';
+                else if (error.code === error.TIMEOUT) errorText = 'Location request timed out.';
+
+                setLocationMessage({ type: 'error', text: errorText });
+                setIsCheckingLocation(false);
+            }
+        );
+    };
 
     const validateStep = (currentStep: number) => {
         const newErrors: Record<string, string> = {};
@@ -391,6 +441,8 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
             riskCategory: riskResult.category,
             riskReasons: riskResult.reasons,
             submittedAt: new Date().toISOString(),
+            isLocationVerified: locationVerified,
+            locationCoordinates: locationCoords || undefined,
         };
 
         storage.addApplication(application);
@@ -544,11 +596,28 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
                                     <input type="email" value={formData.email} onChange={e => handleChange('email', e.target.value)} className={inputClasses} />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className={labelClasses}>Current Address <span className="text-red-400">*</span></label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-sm font-medium text-dimWhite font-poppins">Current Address <span className="text-red-400">*</span></label>
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifyLocation}
+                                            disabled={isCheckingLocation || locationVerified}
+                                            className={`text-xs flex items-center gap-1 transition-colors px-2 py-1 rounded border ${locationVerified ? 'text-green-400 border-green-400/30 bg-green-400/10' : 'text-cyan-400 hover:text-cyan-300 border-cyan-400/30 hover:bg-cyan-400/10'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        >
+                                            {isCheckingLocation ? <Loader2 className="w-3 h-3 animate-spin" /> : locationVerified ? <CheckCircle className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
+                                            {isCheckingLocation ? 'Checking...' : locationVerified ? 'Verified Location' : 'Auto-detect Location'}
+                                        </button>
+                                    </div>
+                                    {locationMessage && (
+                                        <div className={`text-xs mb-2 px-2 py-1 rounded font-poppins ${locationMessage.type === 'success' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
+                                            {locationMessage.text}
+                                        </div>
+                                    )}
                                     <textarea
                                         value={formData.currentAddress}
                                         onChange={e => handleChange('currentAddress', e.target.value)}
-                                        className={`${inputClasses} ${errors.currentAddress ? 'border-red-500' : ''}`}
+                                        readOnly={locationVerified}
+                                        className={`${inputClasses} ${errors.currentAddress ? 'border-red-500' : ''} ${locationVerified ? 'cursor-not-allowed opacity-80' : ''}`}
                                         rows={3}
                                     ></textarea>
                                     {errors.currentAddress && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.currentAddress}</p>}
@@ -577,17 +646,17 @@ export default function AccountOpeningForm({ onSuccess, onRegisterFormFill }: Ac
                                 </div>
                                 <div>
                                     <label className={labelClasses}>City <span className="text-red-400">*</span></label>
-                                    <input type="text" value={formData.city} onChange={e => handleChange('city', e.target.value)} className={`${inputClasses} ${errors.city ? 'border-red-500' : ''}`} />
+                                    <input type="text" value={formData.city} onChange={e => handleChange('city', e.target.value)} readOnly={locationVerified} className={`${inputClasses} ${errors.city ? 'border-red-500' : ''} ${locationVerified ? 'cursor-not-allowed opacity-80' : ''}`} />
                                     {errors.city && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.city}</p>}
                                 </div>
                                 <div>
                                     <label className={labelClasses}>State <span className="text-red-400">*</span></label>
-                                    <input type="text" value={formData.state} onChange={e => handleChange('state', e.target.value)} className={`${inputClasses} ${errors.state ? 'border-red-500' : ''}`} />
+                                    <input type="text" value={formData.state} onChange={e => handleChange('state', e.target.value)} readOnly={locationVerified} className={`${inputClasses} ${errors.state ? 'border-red-500' : ''} ${locationVerified ? 'cursor-not-allowed opacity-80' : ''}`} />
                                     {errors.state && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.state}</p>}
                                 </div>
                                 <div>
                                     <label className={labelClasses}>PIN Code <span className="text-red-400">*</span></label>
-                                    <input type="text" value={formData.pincode} onChange={e => handleChange('pincode', e.target.value)} className={`${inputClasses} ${errors.pincode ? 'border-red-500' : ''}`} />
+                                    <input type="text" value={formData.pincode} onChange={e => handleChange('pincode', e.target.value)} readOnly={locationVerified} className={`${inputClasses} ${errors.pincode ? 'border-red-500' : ''} ${locationVerified ? 'cursor-not-allowed opacity-80' : ''}`} />
                                     {errors.pincode && <p className="text-red-400 text-xs mt-1 font-poppins">{errors.pincode}</p>}
                                 </div>
                             </div>

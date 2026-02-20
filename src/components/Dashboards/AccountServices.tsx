@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { storage } from '../../utils/localStorage';
 import { Application } from '../../types';
-import { FileText, CheckCircle, XCircle, Clock, Plus, ArrowLeft, Trash2, AlertTriangle, X } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Clock, Plus, ArrowLeft, Trash2, AlertTriangle, X, MapPin } from 'lucide-react';
 import AccountOpeningForm from './AccountOpeningForm';
 
 interface AccountServicesProps {
@@ -165,7 +165,15 @@ export default function AccountServices({ onBack, onRegisterFormFill }: AccountS
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-dimWhite font-poppins">
-                                                    Score: {app.riskScore}
+                                                    <div className="flex flex-col gap-1">
+                                                        <span>Score: {app.riskScore}</span>
+                                                        {app.isLocationVerified && (
+                                                            <div className="flex items-center gap-1 text-[10px] text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded-full w-fit">
+                                                                <MapPin className="w-3 h-3" />
+                                                                <span>Loc. Verified</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <button
